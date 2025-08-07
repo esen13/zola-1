@@ -1,3 +1,4 @@
+import { MODEL_DEFAULT } from "@/lib/config"
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -99,14 +100,42 @@ export async function GET() {
       .from("users")
       .select("favorite_models")
       .eq("id", user.id)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error("Error fetching favorite models:", error)
       return NextResponse.json(
-        { error: "Failed to fetch favorite models" },
+        { error: "Failed to fetch favorite models: " + error.message },
         { status: 500 }
       )
+    }
+
+    // If user doesn't exist in users table, create them
+    if (!data) {
+      const { data: newUserData, error: createError } = await supabase
+        .from("users")
+        .insert({
+          id: user.id,
+          email: user.email || `${user.id}@unknown.example`,
+          created_at: new Date().toISOString(),
+          message_count: 0,
+          premium: false,
+          favorite_models: [MODEL_DEFAULT],
+        })
+        .select("favorite_models")
+        .single()
+
+      if (createError) {
+        console.error("Error creating user:", createError)
+        return NextResponse.json(
+          { error: "Failed to create user: " + createError.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        favorite_models: newUserData.favorite_models || [],
+      })
     }
 
     return NextResponse.json({

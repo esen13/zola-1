@@ -25,11 +25,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useChatSession } from "@/lib/chat-store/session/provider"
-import { APP_DOMAIN } from "@/lib/config"
+import { APP_DOMAIN, APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { Check, Copy, Globe, Spinner } from "@phosphor-icons/react"
-import type React from "react"
 import { useState } from "react"
 
 export function DialogPublish() {
@@ -58,7 +57,7 @@ export function DialogPublish() {
   const shareOnX = () => {
     setOpenDialog(false)
 
-    const X_TEXT = `Check out this public page I created with Zola! ${publicLink}`
+    const X_TEXT = `Check out this public page I created with ${APP_NAME}! ${publicLink}`
     window.open(`https://x.com/intent/tweet?text=${X_TEXT}`, "_blank")
   }
 
