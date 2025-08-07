@@ -11,19 +11,8 @@ import { UserProvider } from "@/lib/user-store/provider"
 import { getUserProfile } from "@/lib/user/api"
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
-import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { LayoutClient } from "./layout-client"
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-})
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -39,9 +28,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`antialiased`}>
         <TanstackQueryProvider>
           <LayoutClient />
           <UserProvider initialUser={userProfile}>
