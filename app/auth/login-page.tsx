@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { signInWithGoogle } from "@/lib/api"
+import { APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
-import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 import { HeaderGoBack } from "../components/header-go-back"
@@ -48,7 +48,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="text-foreground text-3xl font-medium tracking-tight sm:text-4xl">
-              Welcome to Airis
+              Welcome to {APP_NAME}
             </h1>
             <p className="text-muted-foreground mt-3">
               Sign in below to increase your message limits.

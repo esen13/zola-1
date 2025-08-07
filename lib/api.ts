@@ -108,7 +108,7 @@ export async function signInWithGoogle(supabase: SupabaseClient) {
 
     // Get base URL dynamically (will work in both browser and server environments)
     const baseUrl = isDev
-      ? "http://localhost:3000"
+      ? "http://localhost:3001"
       : typeof window !== "undefined"
         ? window.location.origin
         : process.env.NEXT_PUBLIC_VERCEL_URL
