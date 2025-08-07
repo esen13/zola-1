@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
+import { APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { CaretLeft, SealCheck, Spinner } from "@phosphor-icons/react"
@@ -133,7 +134,7 @@ export function FeedbackForm({ authUserId, onClose }: FeedbackFormProps) {
               }}
               className="text-muted-foreground pointer-events-none absolute top-3.5 left-4 text-sm leading-[1.4] select-none"
             >
-              What would make Zola better for you?
+              What would make {APP_NAME} better for you?
             </motion.span>
             <textarea
               className="text-foreground h-full w-full resize-none rounded-md bg-transparent px-4 py-3.5 text-sm outline-hidden"

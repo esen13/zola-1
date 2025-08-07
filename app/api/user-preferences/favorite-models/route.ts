@@ -43,33 +43,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user exists first
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle()
-
-    // If user doesn't exist, create them first
-    if (!existingUser) {
-      const { error: createError } = await supabase.from("users").insert({
-        id: user.id,
-        email: user.email || `${user.id}@unknown.example`,
-        created_at: new Date().toISOString(),
-        message_count: 0,
-        premium: false,
-        favorite_models: [MODEL_DEFAULT],
-      })
-
-      if (createError) {
-        console.error("Error creating user:", createError)
-        return NextResponse.json(
-          { error: "Failed to create user: " + createError.message },
-          { status: 500 }
-        )
-      }
-    }
-
     // Update the user's favorite models
     const { data, error } = await supabase
       .from("users")
