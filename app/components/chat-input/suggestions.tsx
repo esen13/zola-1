@@ -1,10 +1,10 @@
 "use client"
 
 import { PromptSuggestion } from "@/components/prompt-kit/prompt-suggestion"
+import { SUGGESTIONS as SUGGESTIONS_CONFIG } from "@/lib/config"
 import { TRANSITION_SUGGESTIONS } from "@/lib/motion"
 import { AnimatePresence, motion } from "motion/react"
 import React, { memo, useCallback, useMemo, useState } from "react"
-import { SUGGESTIONS as SUGGESTIONS_CONFIG } from "../../../lib/config"
 
 type SuggestionsProps = {
   onValueChange: (value: string) => void
@@ -69,7 +69,7 @@ export const Suggestions = memo(function Suggestions({
           <MotionPromptSuggestion
             key={suggestion.label}
             onClick={() => handleCategoryClick(suggestion)}
-            className="capitalize"
+            className=""
             initial="initial"
             animate="animate"
             transition={{

@@ -1,3 +1,4 @@
+import { Banner } from "@/components/nurui/banner"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -30,6 +31,24 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`antialiased`}>
         <TanstackQueryProvider>
+          <Banner
+            id="banner-id"
+            className="fixed hidden w-full items-center gap-4 bg-white shadow-lg md:flex dark:bg-transparent"
+            // buttonClassName="relative top-unset -translate-y-unset"
+            variant="rainbow"
+            height="3.5rem"
+            // rainbowColors={[
+            //   "rgba(231,77,255,0.77)",
+            //   "rgba(231,77,255,0.77)",
+            //   "transparent",
+            //   "rgba(231,77,255,0.77)",
+            //   "transparent",
+            //   "rgba(231,77,255,0.77)",
+            //   "transparent",
+            // ]}
+          >
+            🚀 Project evolving more features soon!
+          </Banner>
           <LayoutClient />
           <UserProvider initialUser={userProfile}>
             <ModelProvider>
