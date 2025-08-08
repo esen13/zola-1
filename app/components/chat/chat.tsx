@@ -217,8 +217,12 @@ export function Chat() {
               },
             }}
           >
-            <h1 className="mb-6 text-3xl font-medium tracking-tight">
-              What&apos;s on your mind?
+            <h1
+              className="mb-6 text-3xl font-medium tracking-tight"
+              role="heading"
+              data-testid="onboarding-heading"
+            >
+              Как вы себя чувствуете?
             </h1>
           </motion.div>
         ) : (
