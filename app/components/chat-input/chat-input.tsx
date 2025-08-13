@@ -142,6 +142,8 @@ export function ChatInput({
     }
   }, [hasSearchSupport, enableSearch, setEnableSearch])
 
+  console.log("isUserAuthenticated", isUserAuthenticated)
+
   return (
     <div className="relative flex w-full flex-col gap-4">
       {hasSuggestions && (
@@ -164,6 +166,7 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+            disabled={!isUserAuthenticated}
           />
           <PromptInputActions className="mt-3 w-full justify-between p-2">
             <div className="flex gap-2">
@@ -192,7 +195,12 @@ export function ChatInput({
               <Button
                 size="sm"
                 className="size-9 rounded-full transition-all duration-300 ease-out"
-                disabled={!value || isSubmitting || isOnlyWhitespace(value)}
+                disabled={
+                  !value ||
+                  isSubmitting ||
+                  isOnlyWhitespace(value) ||
+                  !isUserAuthenticated
+                }
                 type="button"
                 onClick={handleSend}
                 aria-label={status === "streaming" ? "Stop" : "Send message"}

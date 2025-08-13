@@ -218,12 +218,20 @@ export function Chat() {
             }}
           >
             <h1
-              className="mb-6 text-3xl font-medium tracking-tight"
+              className={cn(
+                "mb-6 text-center text-3xl font-medium tracking-tight",
+                !isAuthenticated && "mb-2"
+              )}
               role="heading"
               data-testid="onboarding-heading"
             >
               Как вы себя чувствуете?
             </h1>
+            {!isAuthenticated && (
+              <p className="text-muted-foreground mb-4 text-center text-sm">
+                Чтобы воспользоваться сервисом, пожалуйста, авторизуйтесь
+              </p>
+            )}
           </motion.div>
         ) : (
           <Conversation key="conversation" {...conversationProps} />

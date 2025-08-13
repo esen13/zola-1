@@ -142,7 +142,7 @@ export function ModelSelector({
     >
       <div className="flex items-center gap-2">
         {currentProvider?.icon && <currentProvider.icon className="size-5" />}
-        <span>{currentModel?.name || "Select model"}</span>
+        <span>{currentModel?.name || "Выберите модель"}</span>
       </div>
       <CaretDownIcon className="size-4 opacity-50" />
     </Button>
@@ -178,7 +178,7 @@ export function ModelSelector({
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
-          <TooltipContent>Select a model</TooltipContent>
+          <TooltipContent>Выберите модель</TooltipContent>
         </Tooltip>
         <PopoverContentAuth />
       </Popover>
@@ -197,7 +197,7 @@ export function ModelSelector({
           <DrawerTrigger asChild>{trigger}</DrawerTrigger>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>Select Model</DrawerTitle>
+              <DrawerTitle>Выберите модель</DrawerTitle>
             </DrawerHeader>
             <div className="px-4 pb-2">
               <div className="relative">
