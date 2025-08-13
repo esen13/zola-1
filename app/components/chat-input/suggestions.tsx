@@ -1,10 +1,20 @@
 "use client"
 
 import { PromptSuggestion } from "@/components/prompt-kit/prompt-suggestion"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { SUGGESTIONS as SUGGESTIONS_CONFIG } from "@/lib/config"
 import { TRANSITION_SUGGESTIONS } from "@/lib/motion"
+import { useUser } from "@/lib/user-store/provider"
+import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
-import React, { memo, useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
+import { PopoverContentAuth } from "./popover-content-auth"
 
 type SuggestionsProps = {
   onValueChange: (value: string) => void
@@ -20,6 +30,9 @@ export const Suggestions = memo(function Suggestions({
   value,
 }: SuggestionsProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const { user } = useUser()
+  const isAuthenticated = useMemo(() => !!user?.id, [user?.id])
+  console.log("isAuthenticated 222", isAuthenticated)
 
   if (!value && activeCategory !== null) {
     setActiveCategory(null)
@@ -65,26 +78,51 @@ export const Suggestions = memo(function Suggestions({
           scrollbarWidth: "none",
         }}
       >
-        {SUGGESTIONS_CONFIG.map((suggestion, index) => (
-          <MotionPromptSuggestion
-            key={suggestion.label}
-            onClick={() => handleCategoryClick(suggestion)}
-            className=""
-            initial="initial"
-            animate="animate"
-            transition={{
-              ...TRANSITION_SUGGESTIONS,
-              delay: index * 0.02,
-            }}
-            variants={{
-              initial: { opacity: 0, scale: 0.8 },
-              animate: { opacity: 1, scale: 1 },
-            }}
-          >
-            <suggestion.icon className="size-4" />
-            {suggestion.label}
-          </MotionPromptSuggestion>
-        ))}
+        {SUGGESTIONS_CONFIG.map((suggestion, index) => {
+          if (!isAuthenticated) {
+            return (
+              <Popover>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        className="border-border dark:bg-secondary rounded-xl border text-base"
+                        type="button"
+                        aria-label={suggestion.label}
+                      >
+                        <suggestion.icon className="size-4" />
+                        {suggestion.label}
+                      </Button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>{suggestion.label}</TooltipContent>
+                </Tooltip>
+                <PopoverContentAuth />
+              </Popover>
+            )
+          }
+          return (
+            <MotionPromptSuggestion
+              key={suggestion.label}
+              onClick={() => handleCategoryClick(suggestion)}
+              className={cn("")}
+              initial="initial"
+              animate="animate"
+              transition={{
+                ...TRANSITION_SUGGESTIONS,
+                delay: index * 0.02,
+              }}
+              variants={{
+                initial: { opacity: 0, scale: 0.8 },
+                animate: { opacity: 1, scale: 1 },
+              }}
+            >
+              <suggestion.icon className="size-4" />
+              {suggestion.label}
+            </MotionPromptSuggestion>
+          )
+        })}
       </motion.div>
     ),
     [handleCategoryClick]
