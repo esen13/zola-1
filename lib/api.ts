@@ -104,16 +104,23 @@ export async function updateChatModel(chatId: string, model: string) {
  */
 export async function signInWithGoogle(supabase: SupabaseClient) {
   try {
-    const isDev = process.env.NODE_ENV === "development"
+    console.log("isDev", process.env.NODE_ENV)
+    console.log("NEXT_PUBLIC_VERCEL_URL", process.env.NEXT_PUBLIC_VERCEL_URL)
 
-    // Get base URL dynamically (will work in both browser and server environments)
-    const baseUrl = isDev
-      ? "http://localhost:3001"
-      : typeof window !== "undefined"
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_VERCEL_URL
-          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-          : APP_DOMAIN
+    const isDev =
+      process.env.NODE_ENV === "development"
+        ? // Get base URL dynamically (will work in both browser and server environments)
+          // const baseUrl = isDev
+          "http://localhost:3001"
+        : typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_VERCEL_URL
+            ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+            : APP_DOMAIN
+
+    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : APP_DOMAIN
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
