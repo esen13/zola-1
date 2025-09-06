@@ -55,7 +55,15 @@ export function useChatCore({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
   const [enableSearch, setEnableSearch] = useState(false)
-  const [sendViaWebhook, setSendViaWebhook] = useState(true)
+  const [sendViaWebhook, setSendViaWebhook] = useState<boolean>(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("sendViaWebhook")
+        if (saved !== null) return saved === "true"
+      }
+    } catch {}
+    return true
+  })
 
   // Refs and derived state
   const hasSentFirstMessageRef = useRef(false)
@@ -112,6 +120,15 @@ export function useChatCore({
       requestAnimationFrame(() => setInput(prompt))
     }
   }, [prompt, setInput])
+
+  // Persist webhook preference across sessions
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sendViaWebhook", String(sendViaWebhook))
+      }
+    } catch {}
+  }, [sendViaWebhook])
 
   // Reset messages when navigating from a chat to home
   if (
