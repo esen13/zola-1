@@ -1,7 +1,7 @@
 import { Markdown } from "@/components/prompt-kit/markdown"
 import { cn } from "@/lib/utils"
 import { CaretDownIcon } from "@phosphor-icons/react"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion } from "motion/react"
 import { useState } from "react"
 
 type ReasoningProps = {
@@ -47,6 +47,7 @@ export function Reasoning({ reasoning, isStreaming }: ReasoningProps) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
+            // @ts-ignore
             transition={TRANSITION}
           >
             <div className="text-muted-foreground border-muted-foreground/20 flex flex-col border-l pl-4 text-sm">

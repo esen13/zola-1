@@ -10,7 +10,7 @@ import {
   PlusIcon,
   StarIcon,
 } from "@phosphor-icons/react"
-import { AnimatePresence, motion, Reorder } from "framer-motion"
+import { AnimatePresence, motion, Reorder } from "motion/react"
 import { useMemo, useState } from "react"
 import { useFavoriteModels } from "./use-favorite-models"
 

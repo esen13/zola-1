@@ -21,7 +21,7 @@ const ANIMATION = {
 
 const TRANSITION = {
   duration: ANIMATION_DURATION,
-  ease: "easeInOut", // [0.42, 0, 0.58, 1]
+  ease: [0.42, 0, 0.58, 1], // [0.42, 0, 0.58, 1]
   repeat: Number.POSITIVE_INFINITY,
   repeatType: "loop" as const,
 }
@@ -41,6 +41,7 @@ function Dot({ delay }: { delay: number }) {
     <motion.div
       className={`${DOT_SIZE} ${DOT_COLOR} rounded-full`}
       animate={ANIMATION}
+      // @ts-ignore
       transition={{
         ...TRANSITION,
         delay,
