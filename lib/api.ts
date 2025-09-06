@@ -2,7 +2,11 @@ import { APP_DOMAIN } from "@/lib/config"
 import type { UserProfile } from "@/lib/user/types"
 import { SupabaseClient } from "@supabase/supabase-js"
 import { fetchClient } from "./fetch"
-import { API_ROUTE_CREATE_GUEST, API_ROUTE_UPDATE_CHAT_MODEL } from "./routes"
+import {
+  API_N8N_WEBHOOK,
+  API_ROUTE_CREATE_GUEST,
+  API_ROUTE_UPDATE_CHAT_MODEL,
+} from "./routes"
 import { createClient } from "./supabase/client"
 
 /**
@@ -104,9 +108,8 @@ export async function updateChatModel(chatId: string, model: string) {
  */
 export async function signInWithGoogle(supabase: SupabaseClient) {
   try {
-    // const isDev = process.env.NODE_ENV === "development"
-    console.log("isDev", process.env.NODE_ENV)
-    console.log("isDev", process.env.NEXT_PUBLIC_VERCEL_URL)
+    const isDev = process.env.NODE_ENV === "development"
+    const isProd = process.env.NODE_ENV === "production"
 
     // Get base URL dynamically (will work in both browser and server environments)
     // const baseUrl = isDev
@@ -117,9 +120,11 @@ export async function signInWithGoogle(supabase: SupabaseClient) {
     //       ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     //       : APP_DOMAIN
 
-    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : APP_DOMAIN
+    const baseUrl = isProd
+      ? process.env.NEXT_PUBLIC_VERCEL_URL
+        ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+        : APP_DOMAIN
+      : "http://localhost:3001"
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -206,5 +211,43 @@ export const getOrCreateGuestUserId = async (
       error
     )
     return null
+  }
+}
+
+export async function createN8NWebhook(data: any) {
+  try {
+    const payload = {
+      message: {
+        message_id: data.message_id,
+        chat: {
+          id: data.chat_id,
+          is_bot: false,
+          first_name: data.first_name,
+          username: data.username,
+          type: "private",
+          language_code: "en",
+        },
+        date: new Date().getTime(),
+        text: data.text,
+      },
+      is_site: true,
+    }
+    const res = await fetch(API_N8N_WEBHOOK!, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const responseData = await res.json()
+    if (!res.ok) {
+      throw new Error(
+        responseData.error ||
+          `Failed to create N8N webhook: ${res.status} ${res.statusText}`
+      )
+    }
+
+    return responseData
+  } catch (err) {
+    console.error("Error creating N8N webhook:", err)
+    throw err
   }
 }

@@ -11,7 +11,7 @@ import {
   Spinner,
   Wrench,
 } from "@phosphor-icons/react"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion } from "motion/react"
 import { useMemo, useState } from "react"
 
 interface ToolInvocationProps {
@@ -94,7 +94,11 @@ export function ToolInvocation({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={TRANSITION}
+              transition={{
+                type: "spring",
+                duration: 0.2,
+                bounce: 0,
+              }}
               className="overflow-hidden"
             >
               <div className="px-3 pt-3 pb-3">
@@ -428,7 +432,11 @@ function SingleToolCard({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={TRANSITION}
+            transition={{
+              type: "spring",
+              duration: 0.2,
+              bounce: 0,
+            }}
             className="overflow-hidden"
           >
             <div className="space-y-3 px-3 pt-3 pb-3">

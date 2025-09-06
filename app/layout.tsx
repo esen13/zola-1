@@ -10,10 +10,11 @@ import { TanstackQueryProvider } from "@/lib/tanstack-query/tanstack-query-provi
 import { UserPreferencesProvider } from "@/lib/user-preference-store/provider"
 import { UserProvider } from "@/lib/user-store/provider"
 import { getUserProfile } from "@/lib/user/api"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
-import "./globals.css"
 import { LayoutClient } from "./layout-client"
+import "./globals.css"
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -50,6 +51,7 @@ export default async function RootLayout({
             🚀 Project evolving more features soon!
           </Banner>
           <LayoutClient />
+          <SpeedInsights />
           <UserProvider initialUser={userProfile}>
             <ModelProvider>
               <ChatsProvider userId={userProfile?.id}>

@@ -104,6 +104,8 @@ export function Chat() {
     handleSuggestion,
     handleReload,
     handleInputChange,
+    sendViaWebhook,
+    setSendViaWebhook,
   } = useChatCore({
     initialMessages,
     draftValue,
@@ -122,19 +124,22 @@ export function Chat() {
     bumpChat,
   })
 
+  // Derive status to show loader for webhook sends
+  const effectiveStatus: "submitted" | "streaming" | "ready" | "error" =
+    sendViaWebhook && isSubmitting ? "submitted" : status || "ready"
+
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
       messages,
-      status,
+      status: effectiveStatus,
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,
     }),
-    [messages, status, handleDelete, handleEdit, handleReload]
+    [messages, effectiveStatus, handleDelete, handleEdit, handleReload]
   )
 
-  // Memoize the chat input props
   const chatInputProps = useMemo(
     () => ({
       value: input,
@@ -151,9 +156,11 @@ export function Chat() {
       selectedModel,
       isUserAuthenticated: isAuthenticated,
       stop,
-      status,
+      status: effectiveStatus,
       setEnableSearch,
       enableSearch,
+      sendViaWebhook,
+      setSendViaWebhook,
     }),
     [
       input,
@@ -171,9 +178,11 @@ export function Chat() {
       selectedModel,
       isAuthenticated,
       stop,
-      status,
+      effectiveStatus,
       setEnableSearch,
       enableSearch,
+      sendViaWebhook,
+      setSendViaWebhook,
     ]
   )
 

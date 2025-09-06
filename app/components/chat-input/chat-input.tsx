@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { APP_NAME } from "@/lib/config"
 import { getModelInfo } from "@/lib/models"
+import { API_N8N_WEBHOOK } from "@/lib/routes"
+import { cn, isProd } from "@/lib/utils"
 import { ArrowUpIcon, StopIcon } from "@phosphor-icons/react"
 import { useCallback, useMemo } from "react"
 import { PromptSystem } from "../suggestions/prompt-system"
@@ -35,6 +37,8 @@ type ChatInputProps = {
   status?: "submitted" | "streaming" | "ready" | "error"
   setEnableSearch: (enabled: boolean) => void
   enableSearch: boolean
+  sendViaWebhook: boolean
+  setSendViaWebhook: (enabled: boolean) => void
 }
 
 export function ChatInput({
@@ -54,10 +58,13 @@ export function ChatInput({
   status,
   setEnableSearch,
   enableSearch,
+  sendViaWebhook,
+  setSendViaWebhook,
 }: ChatInputProps) {
   const selectModelConfig = getModelInfo(selectedModel)
   const hasSearchSupport = Boolean(selectModelConfig?.webSearch)
   const isOnlyWhitespace = (text: string) => !/[^\s]/.test(text)
+  const hasWebhookSupport = Boolean(API_N8N_WEBHOOK)
 
   const handleSend = useCallback(() => {
     if (isSubmitting) {
@@ -179,7 +186,7 @@ export function ChatInput({
                 selectedModelId={selectedModel}
                 setSelectedModelId={onSelectModel}
                 isUserAuthenticated={isUserAuthenticated}
-                className="rounded-full"
+                className={cn("rounded-full", isProd && "hidden")}
               />
               {hasSearchSupport ? (
                 <ButtonSearch
@@ -187,6 +194,22 @@ export function ChatInput({
                   onToggle={setEnableSearch}
                   isAuthenticated={isUserAuthenticated}
                 />
+              ) : null}
+              {hasWebhookSupport ? (
+                <Button
+                  variant="secondary"
+                  className={cn(
+                    "border-border dark:bg-secondary rounded-full border bg-transparent transition-all duration-150",
+                    sendViaWebhook &&
+                      "border-[#0091FF]/20 bg-[#E5F3FE] text-[#0091FF] hover:bg-[#E5F3FE] hover:text-[#0091FF]"
+                  )}
+                  disabled
+                  onClick={() => setSendViaWebhook(!sendViaWebhook)}
+                  aria-pressed={sendViaWebhook}
+                  aria-label="Toggle webhook mode"
+                >
+                  Webhook
+                </Button>
               ) : null}
             </div>
             <PromptInputAction

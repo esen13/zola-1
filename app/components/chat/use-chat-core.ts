@@ -2,8 +2,9 @@ import { useChatDraft } from "@/app/hooks/use-chat-draft"
 import { toast } from "@/components/ui/toast"
 import { getOrCreateGuestUserId } from "@/lib/api"
 import { MESSAGE_MAX_LENGTH, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { fetchClient } from "@/lib/fetch"
 import { Attachment } from "@/lib/file-handling"
-import { API_ROUTE_CHAT } from "@/lib/routes"
+import { API_ROUTE_CHAT, API_ROUTE_WEBHOOK } from "@/lib/routes"
 import type { UserProfile } from "@/lib/user/types"
 import type { Message } from "@ai-sdk/react"
 import { useChat } from "@ai-sdk/react"
@@ -54,6 +55,7 @@ export function useChatCore({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
   const [enableSearch, setEnableSearch] = useState(false)
+  const [sendViaWebhook, setSendViaWebhook] = useState(true)
 
   // Refs and derived state
   const hasSentFirstMessageRef = useRef(false)
@@ -199,12 +201,62 @@ export function useChatCore({
         experimental_attachments: attachments || undefined,
       }
 
-      handleSubmit(undefined, options)
-      setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+      if (!sendViaWebhook) {
+        handleSubmit(undefined, options)
+        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+        cacheAndAddMessage(optimisticMessage)
+        clearDraft()
+
+        if (messages.length > 0) {
+          bumpChat(currentChatId)
+        }
+        return
+      }
+      const res = await fetchClient(API_ROUTE_WEBHOOK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatId: currentChatId,
+          userId: uid,
+          model: selectedModel,
+          isAuthenticated,
+          text: input,
+          experimental_attachments: attachments || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || "Webhook request failed")
+      }
+
       cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
       cacheAndAddMessage(optimisticMessage)
-      clearDraft()
 
+      const assistantMessage = {
+        id: `assistant-${Date.now().toString()}`,
+        role: "assistant" as const,
+        content:
+          typeof data?.reply === "string" && data.reply
+            ? data.reply
+            : typeof data?.output === "string" && data.output
+              ? data.output
+              : JSON.stringify(data?.raw || ""),
+        createdAt: new Date(),
+      }
+      if (assistantMessage.content) {
+        // Add assistant message to AI SDK state for immediate rendering
+        setMessages((prev) => {
+          const withoutOptimistic = prev.filter((m) => m.id !== optimisticId)
+          return [
+            ...withoutOptimistic,
+            optimisticMessage as Message,
+            assistantMessage as Message,
+          ]
+        })
+        await cacheAndAddMessage(assistantMessage as Message)
+      }
+      clearDraft()
       if (messages.length > 0) {
         bumpChat(currentChatId)
       }
@@ -236,6 +288,7 @@ export function useChatCore({
     clearDraft,
     messages.length,
     bumpChat,
+    sendViaWebhook,
     setIsSubmitting,
   ])
 
@@ -364,6 +417,8 @@ export function useChatCore({
     setHasDialogAuth,
     enableSearch,
     setEnableSearch,
+    sendViaWebhook,
+    setSendViaWebhook,
 
     // Actions
     submit,
