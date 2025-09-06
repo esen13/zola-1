@@ -55,7 +55,7 @@ export function useChatCore({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
   const [enableSearch, setEnableSearch] = useState(false)
-  const [sendViaWebhook, setSendViaWebhook] = useState(false)
+  const [sendViaWebhook, setSendViaWebhook] = useState(true)
 
   // Refs and derived state
   const hasSentFirstMessageRef = useRef(false)

@@ -203,6 +203,7 @@ export function ChatInput({
                     sendViaWebhook &&
                       "border-[#0091FF]/20 bg-[#E5F3FE] text-[#0091FF] hover:bg-[#E5F3FE] hover:text-[#0091FF]"
                   )}
+                  disabled
                   onClick={() => setSendViaWebhook(!sendViaWebhook)}
                   aria-pressed={sendViaWebhook}
                   aria-label="Toggle webhook mode"
