@@ -12,8 +12,6 @@ import {
 } from "./api"
 import { createErrorResponse, extractErrorMessage } from "./utils"
 
-export const maxDuration = 60
-
 type ChatRequest = {
   messages: MessageAISDK[]
   chatId: string
