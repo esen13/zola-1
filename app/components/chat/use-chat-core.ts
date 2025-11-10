@@ -130,6 +130,8 @@ export function useChatCore({
     } catch {}
   }, [sendViaWebhook])
 
+  console.log("sendViaWebhook", sendViaWebhook)
+
   // Reset messages when navigating from a chat to home
   if (
     prevChatIdRef.current !== null &&

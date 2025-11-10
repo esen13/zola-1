@@ -82,7 +82,7 @@ export const Suggestions = memo(function Suggestions({
         {SUGGESTIONS_CONFIG.map((suggestion, index) => {
           if (!isAuthenticated) {
             return (
-              <Popover>
+              <Popover key={`${suggestion.label}-popover`}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <PopoverTrigger asChild>
