@@ -76,6 +76,18 @@ export function Chat() {
     [user?.system_prompt]
   )
 
+  // New state for quoted text
+  const [quotedText, setQuotedText] = useState<{
+    text: string
+    messageId: string
+  }>()
+  const handleQuotedSelected = useCallback(
+    (text: string, messageId: string) => {
+      setQuotedText({ text, messageId })
+    },
+    []
+  )
+
   // Chat operations (utils + handlers) - created first
   const { checkLimitsAndNotify, ensureChatExists, handleDelete, handleEdit } =
     useChatOperations({
@@ -147,14 +159,16 @@ export function Chat() {
       onEdit: handleEdit,
       onReload: handleReload,
       onQuickReplySelect: handleQuickReplySelect,
+      onQuote: handleQuotedSelected,
     }),
     [
       messages,
-      effectiveStatus,
+      status,
       handleDelete,
       handleEdit,
       handleReload,
       handleQuickReplySelect,
+      handleQuotedSelected,
     ]
   )
 
@@ -179,6 +193,7 @@ export function Chat() {
       enableSearch,
       sendViaWebhook,
       setSendViaWebhook,
+      quotedText,
     }),
     [
       input,
@@ -201,6 +216,7 @@ export function Chat() {
       enableSearch,
       sendViaWebhook,
       setSendViaWebhook,
+      quotedText,
     ]
   )
 
