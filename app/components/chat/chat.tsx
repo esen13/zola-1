@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
 import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useChatCore } from "./use-chat-core"
 import { useChatOperations } from "./use-chat-operations"
 import { useFileUpload } from "./use-file-upload"
@@ -128,6 +128,16 @@ export function Chat() {
   const effectiveStatus: "submitted" | "streaming" | "ready" | "error" =
     sendViaWebhook && isSubmitting ? "submitted" : status || "ready"
 
+  // Handle quick reply selection - вставляет текст в поле ввода
+  const handleQuickReplySelect = useCallback(
+    (reply: string) => {
+      const currentValue = input.trim()
+      const newValue = currentValue ? `${currentValue} ${reply}` : reply
+      handleInputChange(newValue)
+    },
+    [input, handleInputChange]
+  )
+
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
@@ -136,8 +146,16 @@ export function Chat() {
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,
+      onQuickReplySelect: handleQuickReplySelect,
     }),
-    [messages, effectiveStatus, handleDelete, handleEdit, handleReload]
+    [
+      messages,
+      effectiveStatus,
+      handleDelete,
+      handleEdit,
+      handleReload,
+      handleQuickReplySelect,
+    ]
   )
 
   const chatInputProps = useMemo(

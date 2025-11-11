@@ -201,7 +201,7 @@ export function ChatInput({
                   className={cn(
                     "border-border dark:bg-secondary rounded-full border bg-transparent transition-all duration-150",
                     sendViaWebhook &&
-                      "border-[#0091FF]/20 bg-[#E5F3FE] text-[#0091FF] hover:bg-[#E5F3FE] hover:text-[#0091FF]"
+                      "border-info/20 bg-info-foreground text-info hover:bg-info-foreground hover:text-info"
                   )}
                   disabled
                   onClick={() => setSendViaWebhook(!sendViaWebhook)}

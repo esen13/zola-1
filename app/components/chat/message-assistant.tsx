@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils"
 import type { Message as MessageAISDK } from "@ai-sdk/react"
 import { ArrowClockwise, Check, Copy } from "@phosphor-icons/react"
 import { getSources } from "./get-sources"
+import { parseQuickReplies } from "./parse-quick-replies"
+import { QuickReplies } from "./quick-replies"
 import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
 import { SourcesList } from "./sources-list"
@@ -21,6 +23,7 @@ type MessageAssistantProps = {
   copied?: boolean
   copyToClipboard?: () => void
   onReload?: () => void
+  onQuickReplySelect?: (reply: string) => void
   parts?: MessageAISDK["parts"]
   status?: "streaming" | "ready" | "submitted" | "error"
   className?: string
@@ -33,6 +36,7 @@ export function MessageAssistant({
   copied,
   copyToClipboard,
   onReload,
+  onQuickReplySelect,
   parts,
   status,
   className,
@@ -62,6 +66,9 @@ export function MessageAssistant({
           ? (part.toolInvocation?.result?.content?.[0]?.results ?? [])
           : []
       ) ?? []
+
+  // Парсим quick replies из текста сообщения
+  const quickReplies = parseQuickReplies(children)
 
   return (
     <Message
@@ -99,6 +106,14 @@ export function MessageAssistant({
           >
             {children}
           </MessageContent>
+        )}
+
+        {quickReplies.length > 0 && !isLastStreaming && onQuickReplySelect && (
+          <QuickReplies
+            replies={quickReplies}
+            onSelect={onQuickReplySelect}
+            disabled={!isLast}
+          />
         )}
 
         {sources && sources.length > 0 && <SourcesList sources={sources} />}

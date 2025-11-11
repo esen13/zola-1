@@ -14,6 +14,7 @@ type ConversationProps = {
   onDelete: (id: string) => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
+  onQuickReplySelect?: (reply: string) => void
 }
 
 export function Conversation({
@@ -22,9 +23,9 @@ export function Conversation({
   onDelete,
   onEdit,
   onReload,
+  onQuickReplySelect,
 }: ConversationProps) {
   const initialMessageCount = useRef(messages.length)
-
 
   if (!messages || messages.length === 0)
     return <div className="h-full w-full"></div>
@@ -59,6 +60,7 @@ export function Conversation({
                 onDelete={onDelete}
                 onEdit={onEdit}
                 onReload={onReload}
+                onQuickReplySelect={onQuickReplySelect}
                 hasScrollAnchor={hasScrollAnchor}
                 parts={message.parts}
                 status={status}

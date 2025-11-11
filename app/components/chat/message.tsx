@@ -1,5 +1,5 @@
 import { Message as MessageType } from "@ai-sdk/react"
-import React, { useState } from "react"
+import { useState } from "react"
 import { MessageAssistant } from "./message-assistant"
 import { MessageUser } from "./message-user"
 
@@ -12,6 +12,7 @@ type MessageProps = {
   onDelete: (id: string) => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
+  onQuickReplySelect?: (reply: string) => void
   hasScrollAnchor?: boolean
   parts?: MessageType["parts"]
   status?: "streaming" | "ready" | "submitted" | "error"
@@ -27,6 +28,7 @@ export function Message({
   onDelete,
   onEdit,
   onReload,
+  onQuickReplySelect,
   hasScrollAnchor,
   parts,
   status,
@@ -64,6 +66,7 @@ export function Message({
         copied={copied}
         copyToClipboard={copyToClipboard}
         onReload={onReload}
+        onQuickReplySelect={onQuickReplySelect}
         isLast={isLast}
         hasScrollAnchor={hasScrollAnchor}
         parts={parts}

@@ -87,6 +87,8 @@ export async function POST(req: Request) {
 
     // Read as text first to support non-JSON responses
     const rawBody = await rsp.text()
+    console.log("rsp", rsp)
+    console.log("rawBody", rawBody)
     let data: unknown = null
     try {
       data = rawBody ? JSON.parse(rawBody) : null

@@ -73,6 +73,7 @@ export const Suggestions = memo(function Suggestions({
           initial: { opacity: 0, y: 10, filter: "blur(4px)" },
           animate: { opacity: 1, y: 0, filter: "blur(0px)" },
         }}
+        // @ts-ignore
         transition={TRANSITION_SUGGESTIONS}
         style={{
           scrollbarWidth: "none",
@@ -81,7 +82,7 @@ export const Suggestions = memo(function Suggestions({
         {SUGGESTIONS_CONFIG.map((suggestion, index) => {
           if (!isAuthenticated) {
             return (
-              <Popover>
+              <Popover key={`${suggestion.label}-popover`}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <PopoverTrigger asChild>
@@ -109,6 +110,7 @@ export const Suggestions = memo(function Suggestions({
               className={cn("")}
               initial="initial"
               animate="animate"
+              // @ts-ignore
               transition={{
                 ...TRANSITION_SUGGESTIONS,
                 delay: index * 0.02,
@@ -144,6 +146,7 @@ export const Suggestions = memo(function Suggestions({
             filter: "blur(4px)",
           },
         }}
+        // @ts-ignore
         transition={TRANSITION_SUGGESTIONS}
       >
         {activeCategoryData?.items.map((suggestion: string, index: number) => (
@@ -159,6 +162,7 @@ export const Suggestions = memo(function Suggestions({
               initial: { opacity: 0, y: -10 },
               animate: { opacity: 1, y: 0 },
             }}
+            // @ts-ignore
             transition={{
               ...TRANSITION_SUGGESTIONS,
               delay: index * 0.05,
