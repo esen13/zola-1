@@ -21,6 +21,7 @@ export function FileList({ files, onFileRemove }: FileListProps) {
           initial={{ height: 0 }}
           animate={{ height: "auto" }}
           exit={{ height: 0 }}
+          // @ts-ignore
           transition={TRANSITION}
           className="overflow-hidden"
         >
@@ -32,6 +33,7 @@ export function FileList({ files, onFileRemove }: FileListProps) {
                   initial={{ width: 0 }}
                   animate={{ width: 180 }}
                   exit={{ width: 0 }}
+                  // @ts-ignore
                   transition={TRANSITION}
                   className="relative shrink-0 overflow-hidden pt-2"
                 >

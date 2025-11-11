@@ -277,7 +277,11 @@ export function Chat() {
           },
         }}
       >
-        <ChatInput {...chatInputProps} />
+        <ChatInput
+          {...chatInputProps}
+          sendViaWebhook={sendViaWebhook}
+          setSendViaWebhook={setSendViaWebhook}
+        />
       </motion.div>
 
       <FeedbackWidget authUserId={user?.id} />

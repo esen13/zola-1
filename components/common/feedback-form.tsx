@@ -99,6 +99,7 @@ export function FeedbackForm({ authUserId, onClose }: FeedbackFormProps) {
             initial={{ opacity: 0, y: -10, filter: "blur(2px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 10, filter: "blur(2px)" }}
+            // @ts-ignore
             transition={TRANSITION_CONTENT}
           >
             <div className="rounded-full bg-green-500/10 p-1">
@@ -119,6 +120,7 @@ export function FeedbackForm({ authUserId, onClose }: FeedbackFormProps) {
             initial={{ opacity: 0, y: -10, filter: "blur(2px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 10, filter: "blur(2px)" }}
+            // @ts-ignore
             transition={TRANSITION_CONTENT}
           >
             <motion.span
@@ -172,6 +174,7 @@ export function FeedbackForm({ authUserId, onClose }: FeedbackFormProps) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
+                      // @ts-ignore
                       transition={TRANSITION_CONTENT}
                       className="inline-flex items-center gap-2"
                     >
@@ -184,6 +187,7 @@ export function FeedbackForm({ authUserId, onClose }: FeedbackFormProps) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
+                      // @ts-ignore
                       transition={TRANSITION_CONTENT}
                     >
                       Send

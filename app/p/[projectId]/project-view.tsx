@@ -421,7 +421,11 @@ export function ProjectView({ projectId }: ProjectViewProps) {
           },
         }}
       >
-        <ChatInput {...chatInputProps} />
+        <ChatInput
+          {...chatInputProps}
+          sendViaWebhook={true}
+          setSendViaWebhook={() => {}}
+        />
       </motion.div>
 
       {showOnboarding && chats.length > 0 ? (
