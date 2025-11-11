@@ -17,6 +17,7 @@ type MessageProps = {
   parts?: MessageType["parts"]
   status?: "streaming" | "ready" | "submitted" | "error"
   className?: string
+  onQuote?: (text: string, messageId: string) => void
 }
 
 export function Message({
@@ -33,6 +34,7 @@ export function Message({
   parts,
   status,
   className,
+  onQuote,
 }: MessageProps) {
   const [copied, setCopied] = useState(false)
 
@@ -72,6 +74,8 @@ export function Message({
         parts={parts}
         status={status}
         className={className}
+        messageId={id}
+        onQuote={onQuote}
       >
         {children}
       </MessageAssistant>

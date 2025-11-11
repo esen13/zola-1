@@ -8,13 +8,16 @@ import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { cn } from "@/lib/utils"
 import type { Message as MessageAISDK } from "@ai-sdk/react"
 import { ArrowClockwise, Check, Copy } from "@phosphor-icons/react"
+import { useCallback, useRef } from "react"
 import { getSources } from "./get-sources"
 import { parseQuickReplies } from "./parse-quick-replies"
 import { QuickReplies } from "./quick-replies"
+import { QuoteButton } from "./quote-button"
 import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
 import { SourcesList } from "./sources-list"
 import { ToolInvocation } from "./tool-invocation"
+import { useAssistantMessageSelection } from "./useAssistantMessageSelection"
 
 type MessageAssistantProps = {
   children: string
@@ -27,6 +30,8 @@ type MessageAssistantProps = {
   parts?: MessageAISDK["parts"]
   status?: "streaming" | "ready" | "submitted" | "error"
   className?: string
+  messageId: string
+  onQuote?: (text: string, messageId: string) => void
 }
 
 export function MessageAssistant({
@@ -40,6 +45,8 @@ export function MessageAssistant({
   parts,
   status,
   className,
+  messageId,
+  onQuote,
 }: MessageAssistantProps) {
   const { preferences } = useUserPreferences()
   const sources = getSources(parts)
@@ -67,6 +74,19 @@ export function MessageAssistant({
           : []
       ) ?? []
 
+  const isQuoteEnabled = !preferences.multiModelEnabled
+  const messageRef = useRef<HTMLDivElement>(null)
+  const { selectionInfo, clearSelection } = useAssistantMessageSelection(
+    messageRef,
+    isQuoteEnabled
+  )
+  const handleQuoteBtnClick = useCallback(() => {
+    if (selectionInfo && onQuote) {
+      onQuote(selectionInfo.text, selectionInfo.messageId)
+      clearSelection()
+    }
+  }, [selectionInfo, onQuote, clearSelection])
+
   // Парсим quick replies из текста сообщения
   const quickReplies = parseQuickReplies(children)
 
@@ -78,7 +98,14 @@ export function MessageAssistant({
         className
       )}
     >
-      <div className={cn("flex min-w-full flex-col gap-2", isLast && "pb-8")}>
+      <div
+        ref={messageRef}
+        className={cn(
+          "relative flex min-w-full flex-col gap-2",
+          isLast && "pb-8"
+        )}
+        {...(isQuoteEnabled && { "data-message-id": messageId })}
+      >
         {reasoningParts && reasoningParts.reasoning && (
           <Reasoning
             reasoning={reasoningParts.reasoning}
@@ -158,6 +185,15 @@ export function MessageAssistant({
               </MessageAction>
             ) : null}
           </MessageActions>
+        )}
+
+        {isQuoteEnabled && selectionInfo && selectionInfo.messageId && (
+          <QuoteButton
+            mousePosition={selectionInfo.position}
+            onQuote={handleQuoteBtnClick}
+            messageContainerRef={messageRef}
+            onDismiss={clearSelection}
+          />
         )}
       </div>
     </Message>
