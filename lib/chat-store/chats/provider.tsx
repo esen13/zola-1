@@ -122,7 +122,7 @@ export function ChatsProvider({
     isAuthenticated?: boolean,
     systemPrompt?: string,
     projectId?: string
-  ) => {
+  ): Promise<Chats | any> => {
     if (!userId) return
     const prev = [...chats]
 
