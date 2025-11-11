@@ -13,7 +13,7 @@ import { getModelInfo } from "@/lib/models"
 import { API_N8N_WEBHOOK } from "@/lib/routes"
 import { cn, isProd } from "@/lib/utils"
 import { ArrowUpIcon, StopIcon } from "@phosphor-icons/react"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { PromptSystem } from "../suggestions/prompt-system"
 import { ButtonFileUpload } from "./button-file-upload"
 import { ButtonSearch } from "./button-search"
@@ -39,6 +39,7 @@ type ChatInputProps = {
   enableSearch: boolean
   sendViaWebhook: boolean
   setSendViaWebhook: (enabled: boolean) => void
+  quotedText?: { text: string; messageId: string } | null
 }
 
 export function ChatInput({
@@ -60,11 +61,13 @@ export function ChatInput({
   enableSearch,
   sendViaWebhook,
   setSendViaWebhook,
+  quotedText,
 }: ChatInputProps) {
   const selectModelConfig = getModelInfo(selectedModel)
   const hasSearchSupport = Boolean(selectModelConfig?.webSearch)
   const isOnlyWhitespace = (text: string) => !/[^\s]/.test(text)
   const hasWebhookSupport = Boolean(API_N8N_WEBHOOK)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSend = useCallback(() => {
     if (isSubmitting) {
@@ -143,6 +146,21 @@ export function ChatInput({
     [isUserAuthenticated, onFileUpload]
   )
 
+  useEffect(() => {
+    if (quotedText) {
+      const quoted = quotedText.text
+        .split("\n")
+        .map((line) => `> ${line}`)
+        .join("\n")
+      onValueChange(value ? `${value}\n\n${quoted}\n\n` : `${quoted}\n\n`)
+
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus()
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotedText, onValueChange])
+
   useMemo(() => {
     if (!hasSearchSupport && enableSearch) {
       setEnableSearch?.(false)
@@ -170,6 +188,7 @@ export function ChatInput({
           <FileList files={files} onFileRemove={onFileRemove} />
           <PromptInputTextarea
             placeholder={`Ask ${APP_NAME}`}
+            ref={textareaRef}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
