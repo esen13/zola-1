@@ -7,10 +7,11 @@ import type {
 } from "@/app/types/api.types"
 import { FREE_MODELS_IDS, NON_AUTH_ALLOWED_MODELS } from "@/lib/config"
 import { getProviderForModel } from "@/lib/openproviders/provider-map"
+import { SupportedModel } from "@/lib/openproviders/types"
 import { sanitizeUserInput } from "@/lib/sanitize"
 import { validateUserIdentity } from "@/lib/server/api"
 import { checkUsageByModel, incrementUsage } from "@/lib/usage"
-import { getUserKey, type ProviderWithoutOllama } from "@/lib/user-keys"
+import { getUserKey, type Provider } from "@/lib/user-keys"
 
 export async function validateAndTrackUsage({
   userId,
@@ -30,20 +31,15 @@ export async function validateAndTrackUsage({
     }
   } else {
     // For authenticated users, check API key requirements
-    const provider = getProviderForModel(model)
+    const provider = getProviderForModel(model as SupportedModel)
 
-    if (provider !== "ollama") {
-      const userApiKey = await getUserKey(
-        userId,
-        provider as ProviderWithoutOllama
+    const userApiKey = await getUserKey(userId, provider as Provider)
+
+    // If no API key and model is not in free list, deny access
+    if (!userApiKey && !FREE_MODELS_IDS.includes(model)) {
+      throw new Error(
+        `This model requires an API key for ${provider}. Please add your API key in settings or use a free model.`
       )
-
-      // If no API key and model is not in free list, deny access
-      if (!userApiKey && !FREE_MODELS_IDS.includes(model)) {
-        throw new Error(
-          `This model requires an API key for ${provider}. Please add your API key in settings or use a free model.`
-        )
-      }
     }
   }
 

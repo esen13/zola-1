@@ -4,7 +4,6 @@ import { deepseekModels } from "./data/deepseek"
 import { geminiModels } from "./data/gemini"
 import { grokModels } from "./data/grok"
 import { mistralModels } from "./data/mistral"
-import { getOllamaModels, ollamaModels } from "./data/ollama"
 import { openaiModels } from "./data/openai"
 import { openrouterModels } from "./data/openrouter"
 import { perplexityModels } from "./data/perplexity"
@@ -19,7 +18,6 @@ const STATIC_MODELS: ModelConfig[] = [
   ...grokModels,
   ...perplexityModels,
   ...geminiModels,
-  ...ollamaModels, // Static fallback Ollama models
   ...openrouterModels,
 ]
 
@@ -38,16 +36,8 @@ export async function getAllModels(): Promise<ModelConfig[]> {
   }
 
   try {
-    // Get dynamically detected Ollama models (includes enabled check internally)
-    const detectedOllamaModels = await getOllamaModels()
-
-    // Combine static models (excluding static Ollama models) with detected ones
-    const staticModelsWithoutOllama = STATIC_MODELS.filter(
-      (model) => model.providerId !== "ollama"
-    )
-
-    dynamicModelsCache = [...staticModelsWithoutOllama, ...detectedOllamaModels]
-
+    // For now, just return static models
+    dynamicModelsCache = STATIC_MODELS
     lastFetchTime = now
     return dynamicModelsCache
   } catch (error) {
@@ -60,10 +50,7 @@ export async function getModelsWithAccessFlags(): Promise<ModelConfig[]> {
   const models = await getAllModels()
 
   const freeModels = models
-    .filter(
-      (model) =>
-        FREE_MODELS_IDS.includes(model.id) || model.providerId === "ollama"
-    )
+    .filter((model) => FREE_MODELS_IDS.includes(model.id))
     .map((model) => ({
       ...model,
       accessible: true,
