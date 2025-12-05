@@ -7,6 +7,8 @@ import { APP_NAME } from "@/lib/config"
 import { cn } from "@/lib/utils"
 import type { Message as MessageAISDK } from "@ai-sdk/react"
 import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr"
+import { format } from "date-fns"
+import { ru } from "date-fns/locale"
 import Link from "next/link"
 import { Header } from "./header"
 
@@ -34,11 +36,7 @@ export default function Article({
             dateTime={new Date(date).toISOString().split("T")[0]}
             className="text-foreground"
           >
-            {new Date(date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+            {format(new Date(date), "d MMMM yyyy", { locale: ru })}
           </time>
         </div>
 

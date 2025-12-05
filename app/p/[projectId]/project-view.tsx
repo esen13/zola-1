@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils"
 import { useChat } from "@ai-sdk/react"
 import { ChatCircleIcon } from "@phosphor-icons/react"
 import { useQuery } from "@tanstack/react-query"
+import { format, parseISO } from "date-fns"
+import { ru } from "date-fns/locale"
 import { AnimatePresence, motion } from "motion/react"
 import { usePathname } from "next/navigation"
 import { useCallback, useMemo, useState } from "react"
@@ -310,11 +312,14 @@ export function ProjectView({ projectId }: ProjectViewProps) {
   }, [user, selectedModel, reload])
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+    try {
+      const date = parseISO(dateString)
+      return format(date, "d MMM yyyy", { locale: ru })
+    } catch {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return "Invalid date"
+      return format(date, "d MMM yyyy", { locale: ru })
+    }
   }
 
   // Memoize the conversation props to prevent unnecessary rerenders
