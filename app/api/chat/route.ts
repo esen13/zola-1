@@ -1,7 +1,8 @@
 import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { getAllModels } from "@/lib/models"
 import { getProviderForModel } from "@/lib/openproviders/provider-map"
-import type { ProviderWithoutOllama } from "@/lib/user-keys"
+import { SupportedModel } from "@/lib/openproviders/types"
+import type { Provider } from "@/lib/user-keys"
 import { Attachment } from "@ai-sdk/ui-utils"
 import { Message as MessageAISDK, streamText, ToolSet } from "ai"
 import {
@@ -81,10 +82,9 @@ export async function POST(req: Request) {
     let apiKey: string | undefined
     if (isAuthenticated && userId) {
       const { getEffectiveApiKey } = await import("@/lib/user-keys")
-      const provider = getProviderForModel(model)
+      const provider = getProviderForModel(model as SupportedModel)
       apiKey =
-        (await getEffectiveApiKey(userId, provider as ProviderWithoutOllama)) ||
-        undefined
+        (await getEffectiveApiKey(userId, provider as Provider)) || undefined
     }
 
     const result = streamText({
