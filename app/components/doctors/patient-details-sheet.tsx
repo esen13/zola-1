@@ -251,7 +251,7 @@ export const PatientDetailsSheet = ({
           <SheetDescription>Подробная информация о пациенте</SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6 px-4">
+        <div className="mt-6 space-y-6 px-4 pb-20">
           {/* Основная информация */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Основная информация</h3>
