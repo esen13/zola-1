@@ -185,55 +185,97 @@ export type Database = {
       }
       users: {
         Row: {
+          id: string
+          username: string | null
+          avatar_url: string | null
           anonymous: boolean | null
-          created_at: string | null
           daily_message_count: number | null
           daily_reset: string | null
           display_name: string | null
-          email: string
           favorite_models: string[] | null
-          id: string
           message_count: number | null
           premium: boolean | null
           profile_image: string | null
+          created_at: string | null
           last_active_at: string | null
           daily_pro_message_count: number | null
           daily_pro_reset: string | null
           system_prompt: string | null
+          email: string
+          role: string | null
+          phone_number: string | null
+          is_policy: boolean | null
+          telegram_id: number | null
+          staff_id: number | null
+          staff_name: string | null
+          preliminary_diagnosis: string | null
+          company_id: number | null
+          company_name: string | null
+          chat_status: string | null
+          gender: string | null
+          date_of_birth: string | null
         }
         Insert: {
+          id: string
+          username?: string | null
+          avatar_url?: string | null
           anonymous?: boolean | null
-          created_at?: string | null
           daily_message_count?: number | null
           daily_reset?: string | null
           display_name?: string | null
-          email: string
           favorite_models?: string[] | null
-          id: string
           message_count?: number | null
           premium?: boolean | null
           profile_image?: string | null
+          created_at?: string | null
           last_active_at?: string | null
           daily_pro_message_count?: number | null
           daily_pro_reset?: string | null
           system_prompt?: string | null
+          email: string
+          role?: string | null
+          phone_number?: string | null
+          is_policy?: boolean | null
+          telegram_id?: number | null
+          staff_id?: number | null
+          staff_name?: string | null
+          preliminary_diagnosis?: string | null
+          company_id?: number | null
+          company_name?: string | null
+          chat_status?: string | null
+          gender?: string | null
+          date_of_birth?: string | null
         }
         Update: {
+          id?: string
+          username?: string | null
+          avatar_url?: string | null
           anonymous?: boolean | null
-          created_at?: string | null
           daily_message_count?: number | null
           daily_reset?: string | null
           display_name?: string | null
-          email?: string
           favorite_models?: string[] | null
-          id?: string
           message_count?: number | null
           premium?: boolean | null
           profile_image?: string | null
+          created_at?: string | null
           last_active_at?: string | null
           daily_pro_message_count?: number | null
           daily_pro_reset?: string | null
           system_prompt?: string | null
+          email?: string
+          role?: string | null
+          phone_number?: string | null
+          is_policy?: boolean | null
+          telegram_id?: number | null
+          staff_id?: number | null
+          staff_name?: string | null
+          preliminary_diagnosis?: string | null
+          company_id?: number | null
+          company_name?: string | null
+          chat_status?: string | null
+          gender?: string | null
+          date_of_birth?: string | null
         }
         Relationships: []
       }

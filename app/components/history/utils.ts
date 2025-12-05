@@ -1,4 +1,13 @@
 import type { Chats } from "@/lib/chat-store/types"
+import {
+  format,
+  formatDistanceToNow,
+  parseISO,
+  startOfDay,
+  startOfYear,
+  subDays,
+} from "date-fns"
+import { ru } from "date-fns/locale"
 
 type TimeGroup = {
   name: string
@@ -13,14 +22,10 @@ export function groupChatsByDate(
   if (searchQuery) return null // Don't group when searching
 
   const now = new Date()
-  const today = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  ).getTime()
-  const weekAgo = today - 7 * 24 * 60 * 60 * 1000
-  const monthAgo = today - 30 * 24 * 60 * 60 * 1000
-  const yearStart = new Date(now.getFullYear(), 0, 1).getTime()
+  const today = startOfDay(now).getTime()
+  const weekAgo = subDays(startOfDay(now), 7).getTime()
+  const monthAgo = subDays(startOfDay(now), 30).getTime()
+  const yearStart = startOfYear(now).getTime()
 
   const todayChats: Chats[] = []
   const last7DaysChats: Chats[] = []
@@ -36,7 +41,14 @@ export function groupChatsByDate(
       return
     }
 
-    const chatTimestamp = new Date(chat.updated_at).getTime()
+    let chatDate: Date
+    try {
+      chatDate = parseISO(chat.updated_at)
+    } catch {
+      chatDate = new Date(chat.updated_at)
+    }
+
+    const chatTimestamp = chatDate.getTime()
 
     if (chatTimestamp >= today) {
       todayChats.push(chat)
@@ -47,7 +59,7 @@ export function groupChatsByDate(
     } else if (chatTimestamp >= yearStart) {
       thisYearChats.push(chat)
     } else {
-      const year = new Date(chat.updated_at).getFullYear()
+      const year = chatDate.getFullYear()
       if (!olderChats[year]) {
         olderChats[year] = []
       }
@@ -86,38 +98,46 @@ export function groupChatsByDate(
 export function formatDate(dateString?: string | null): string {
   if (!dateString) return "No date"
 
-  const date = new Date(dateString)
+  let date: Date
+  try {
+    date = parseISO(dateString)
+  } catch {
+    date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Invalid date"
+  }
+
   const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMinutes = Math.floor(diffMs / (1000 * 60))
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  // Less than 1 minute: show "Just now"
+  const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+  if (diffMinutes < 1) return "Just now"
 
   // Less than 1 hour: show minutes
   if (diffMinutes < 60) {
-    if (diffMinutes < 1) return "Just now"
-    return `${diffMinutes} ${diffMinutes === 1 ? "minute" : "minutes"} ago`
+    return formatDistanceToNow(date, { addSuffix: true, locale: ru })
   }
 
   // Less than 24 hours: show hours
+  const diffHours = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+  )
   if (diffHours < 24) {
-    return `${diffHours} ${diffHours === 1 ? "hour" : "hours"} ago`
+    return formatDistanceToNow(date, { addSuffix: true, locale: ru })
   }
 
   // Less than 7 days: show days
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+  )
   if (diffDays < 7) {
-    return `${diffDays} ${diffDays === 1 ? "day" : "days"} ago`
+    return formatDistanceToNow(date, { addSuffix: true, locale: ru })
   }
 
   // Same year: show month and day
   if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleDateString("en-US", { month: "long", day: "numeric" })
+    return format(date, "d MMMM", { locale: ru })
   }
 
   // Different year: show month, day and year
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
+  return format(date, "d MMMM yyyy", { locale: ru })
 }
