@@ -53,7 +53,13 @@ export async function PUT(
 
     // Парсим тело запроса
     const body = await request.json()
-    const { staff_id, staff_name, preliminary_diagnosis } = body
+    const {
+      staff_id,
+      staff_name,
+      preliminary_diagnosis,
+      comments,
+      treatment_plan,
+    } = body
 
     // Подготавливаем объект обновления
     const updateData: any = {}
@@ -70,12 +76,22 @@ export async function PUT(
       updateData.preliminary_diagnosis = preliminary_diagnosis
     }
 
+    if (comments !== undefined) {
+      updateData.comments = comments
+    }
+
+    if (treatment_plan !== undefined) {
+      updateData.treatment_plan = treatment_plan
+    }
+
     // Обновляем данные пациента
     const { data, error } = await supabase
       .from("users")
       .update(updateData)
       .eq("id", patientId)
-      .select("id, staff_id, staff_name, preliminary_diagnosis")
+      .select(
+        "id, staff_id, staff_name, preliminary_diagnosis, comments, treatment_plan"
+      )
       .single()
 
     if (error) {
@@ -96,6 +112,8 @@ export async function PUT(
         staff_id: data.staff_id,
         staff_name: data.staff_name,
         preliminary_diagnosis: data.preliminary_diagnosis,
+        comments: data.comments,
+        treatment_plan: data.treatment_plan,
       },
     })
   } catch (error) {

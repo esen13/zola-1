@@ -214,6 +214,8 @@ export type Database = {
           chat_status: string | null
           gender: string | null
           date_of_birth: string | null
+          comments: string | null
+          treatment_plan: string | null
         }
         Insert: {
           id: string
@@ -245,6 +247,8 @@ export type Database = {
           chat_status?: string | null
           gender?: string | null
           date_of_birth?: string | null
+          comments?: string | null
+          treatment_plan?: string | null
         }
         Update: {
           id?: string
@@ -276,6 +280,8 @@ export type Database = {
           chat_status?: string | null
           gender?: string | null
           date_of_birth?: string | null
+          comments?: string | null
+          treatment_plan?: string | null
         }
         Relationships: []
       }
