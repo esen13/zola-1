@@ -70,7 +70,9 @@ export async function GET() {
         staff_name,
         staff_id,
         company_name,
-        preliminary_diagnosis
+        preliminary_diagnosis,
+        comments,
+        treatment_plan
       `
       )
       .neq("id", user.id) // Исключаем текущего пользователя
@@ -101,6 +103,8 @@ export async function GET() {
       staff_id: patient.staff_id || null,
       company_name: patient.company_name || null,
       preliminary_diagnosis: patient.preliminary_diagnosis || null,
+      comments: patient.comments || null,
+      treatment_plan: patient.treatment_plan || null,
     }))
 
     return NextResponse.json({ patients: formattedPatients })
