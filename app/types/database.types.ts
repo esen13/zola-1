@@ -393,6 +393,38 @@ export type Database = {
           },
         ]
       }
+      users_audio: {
+        Row: {
+          id: string
+          user_id: string
+          audio_filename: string
+          file_path: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          audio_filename: string
+          file_path: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          audio_filename?: string
+          file_path?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_audio_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
