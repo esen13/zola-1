@@ -1,5 +1,6 @@
 "use client"
 
+import { AudioTranscriptionSheet } from "@/app/components/doctors/audio-transcription-sheet"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/toast"
 import { formatDateTime } from "@/lib/utils/date"
 import { useQuery } from "@tanstack/react-query"
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 
 type AudioRecord = {
   id: string
@@ -16,6 +17,8 @@ type AudioRecord = {
   file_path: string
   created_at: string | null
   signed_url: string | null
+  transcribe_text?: string | null
+  final_text?: string | null
 }
 
 const fetchAudioList = async (): Promise<AudioRecord[]> => {
@@ -28,6 +31,9 @@ const fetchAudioList = async (): Promise<AudioRecord[]> => {
 }
 
 export const AudioList = () => {
+  const [selectedAudio, setSelectedAudio] = useState<AudioRecord | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+
   const {
     data: audioList,
     isLoading,
@@ -38,26 +44,28 @@ export const AudioList = () => {
     queryFn: fetchAudioList,
   })
 
-  const handleDownload = useCallback(
-    (audio: AudioRecord) => {
-      if (!audio.signed_url) {
-        toast({
-          title: "Ошибка",
-          description: "URL для скачивания недоступен",
-          status: "error",
-        })
-        return
-      }
+  const handleOpenDetails = useCallback((audio: AudioRecord) => {
+    setSelectedAudio(audio)
+    setIsSheetOpen(true)
+  }, [])
 
-      const link = document.createElement("a")
-      link.href = audio.signed_url
-      link.download = audio.audio_filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    },
-    []
-  )
+  const handleDownload = useCallback((audio: AudioRecord) => {
+    if (!audio.signed_url) {
+      toast({
+        title: "Ошибка",
+        description: "URL для скачивания недоступен",
+        status: "error",
+      })
+      return
+    }
+
+    const link = document.createElement("a")
+    link.href = audio.signed_url
+    link.download = audio.audio_filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [])
 
   if (isLoading) {
     return (
@@ -84,7 +92,7 @@ export const AudioList = () => {
           <CardTitle>Мои записи</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-destructive">
+          <div className="text-destructive text-center">
             Ошибка загрузки записей
           </div>
           <Button onClick={() => refetch()} variant="outline" className="mt-4">
@@ -102,7 +110,7 @@ export const AudioList = () => {
           <CardTitle>Мои записи</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
+          <div className="text-muted-foreground py-8 text-center">
             Нет сохраненных записей
           </div>
         </CardContent>
@@ -120,18 +128,15 @@ export const AudioList = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {audioList.map((audio) => (
-          <div
-            key={audio.id}
-            className="rounded-lg border p-4 space-y-3"
-          >
+          <div key={audio.id} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">
                   {audio.audio_filename}
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">
+                <div className="text-muted-foreground mt-1 text-sm">
                   {audio.created_at
-                    ? formatDateTime(new Date(audio.created_at))
+                    ? formatDateTime(audio.created_at as string)
                     : "Дата неизвестна"}
                 </div>
               </div>
@@ -139,13 +144,19 @@ export const AudioList = () => {
 
             {audio.signed_url && (
               <div className="space-y-2">
-                <audio src={audio.signed_url} controls className="w-full" />
+                <audio
+                  src={audio.signed_url}
+                  controls
+                  className="w-full"
+                  preload="none"
+                />
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleDownload(audio)}
                     variant="outline"
                     size="sm"
                     className="flex-1"
+                    disabled
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -164,13 +175,40 @@ export const AudioList = () => {
                     </svg>
                     Скачать
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleOpenDetails(audio)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
+                    Подробнее
+                  </Button>
                 </div>
               </div>
             )}
           </div>
         ))}
       </CardContent>
+
+      <AudioTranscriptionSheet
+        audio={selectedAudio}
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
     </Card>
   )
 }
-

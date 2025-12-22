@@ -400,6 +400,8 @@ export type Database = {
           audio_filename: string
           file_path: string
           created_at: string | null
+          transcribe_text: string | null
+          final_text: string | null
         }
         Insert: {
           id?: string
@@ -407,6 +409,8 @@ export type Database = {
           audio_filename: string
           file_path: string
           created_at?: string | null
+          transcribe_text?: string | null
+          final_text?: string | null
         }
         Update: {
           id?: string
@@ -414,6 +418,8 @@ export type Database = {
           audio_filename?: string
           file_path?: string
           created_at?: string | null
+          transcribe_text?: string | null
+          final_text?: string | null
         }
         Relationships: [
           {

@@ -173,6 +173,7 @@ export const AudioRecorder = ({
           error instanceof Error ? error.message : "Не удалось сохранить аудио",
         status: "error",
       })
+    } finally {
       setState("idle")
     }
   }, [audioBlob, audioUrl, onRecordingComplete])
@@ -239,7 +240,7 @@ export const AudioRecorder = ({
                   <line x1="12" x2="12" y1="19" y2="22" />
                 </svg>
               </div>
-              <div className="text-2xl font-mono font-semibold">
+              <div className="font-mono text-2xl font-semibold">
                 {formatDuration(duration)}
               </div>
             </div>
@@ -295,8 +296,8 @@ export const AudioRecorder = ({
 
         {state === "processing" && (
           <div className="flex items-center justify-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-sm text-muted-foreground">
+            <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+            <span className="text-muted-foreground text-sm">
               Сохранение аудио...
             </span>
           </div>
@@ -305,4 +306,3 @@ export const AudioRecorder = ({
     </Card>
   )
 }
-

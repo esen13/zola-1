@@ -5,8 +5,11 @@ import { NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 
+// const N8N_WEBHOOK_URL =
+//   "https://esen.app.n8n.cloud/webhook-test/483b4361-5907-4712-9faf-074f1a8cb881"
+
 const N8N_WEBHOOK_URL =
-  "https://esen.app.n8n.cloud/webhook-test/483b4361-5907-4712-9faf-074f1a8cb881"
+  "https://esen.app.n8n.cloud/webhook/483b4361-5907-4712-9faf-074f1a8cb881"
 
 /**
  * POST /api/doctors/audio
@@ -113,7 +116,7 @@ export async function POST(request: Request) {
     const { data: signedUrlData, error: signedUrlError } =
       await serviceClient.storage
         .from("audio_file_doctors")
-        .createSignedUrl(filePath, 93600) // 93600 секунд = 26 часов
+        .createSignedUrl(filePath, 31536000) // 31536000 секунд = 1 год (365 дней)
 
     if (signedUrlError) {
       console.error("Ошибка создания signed URL:", signedUrlError)
@@ -126,6 +129,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         audio_filename: audioFilename,
         file_path: filePath,
+        signed_url: signedUrlData?.signedUrl || null,
       })
       .select()
       .single()
@@ -226,8 +230,17 @@ export async function GET() {
       )
     }
 
+    // Используем service role клиент для получения данных и создания signed URLs
+    const serviceClient = createServiceRoleClient()
+    if (!serviceClient) {
+      return NextResponse.json(
+        { error: "Service client не настроен" },
+        { status: 500 }
+      )
+    }
+
     // Получаем список аудио записей текущего доктора
-    const { data: audioRecords, error: audioError } = await supabase
+    const { data: audioRecords, error: audioError } = await serviceClient
       .from("users_audio")
       .select("*")
       .eq("user_id", user.id)
@@ -241,12 +254,20 @@ export async function GET() {
       )
     }
 
-    // Создаем signed URLs для каждого файла
+    // Создаем signed URLs для каждого файла используя service role клиент
     const audioWithUrls = await Promise.all(
       (audioRecords || []).map(async (record) => {
-        const { data: signedUrlData } = await supabase.storage
-          .from("audio_file_doctors")
-          .createSignedUrl(record.file_path, 3600) // 1 час
+        const { data: signedUrlData, error: signedUrlError } =
+          await serviceClient.storage
+            .from("audio_file_doctors")
+            .createSignedUrl(record.file_path, 31536000) // 31536000 секунд = 1 год (365 дней)
+
+        if (signedUrlError) {
+          console.error(
+            `Ошибка создания signed URL для ${record.file_path}:`,
+            signedUrlError
+          )
+        }
 
         return {
           ...record,
