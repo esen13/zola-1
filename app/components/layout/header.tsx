@@ -2,6 +2,7 @@
 
 import { HistoryTrigger } from "@/app/components/history/history-trigger"
 import { AppInfoTrigger } from "@/app/components/layout/app-info/app-info-trigger"
+import { ButtonAudio } from "@/app/components/layout/button-audio"
 import { ButtonNewChat } from "@/app/components/layout/button-new-chat"
 import { UserMenu } from "@/app/components/layout/user-menu"
 import { useBreakpoint } from "@/app/hooks/use-breakpoint"
@@ -24,7 +25,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
   const isLoggedIn = !!user
 
   return (
-    <header className="h-app-header pointer-events-none fixed top-0 right-0 left-0 z-50">
+    <header className="h-app-header border-border bg-background pointer-events-none fixed top-0 right-0 left-0 z-50 border-b">
       <div className="relative mx-auto flex h-full max-w-full items-center justify-between bg-transparent px-4 sm:px-6 lg:bg-transparent lg:px-8">
         <div className="flex flex-1 items-center justify-between">
           <div className="-ml-0.5 flex flex-1 items-center gap-2 lg:-ml-2.5">
@@ -64,6 +65,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
           ) : (
             <div className="pointer-events-auto flex flex-1 items-center justify-end gap-2">
               {!isMultiModelEnabled && <DialogPublish />}
+              <ButtonAudio />
               <ButtonNewChat />
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
               <UserMenu />

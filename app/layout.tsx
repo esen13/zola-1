@@ -1,4 +1,3 @@
-import { Banner } from "@/components/nurui/banner"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -13,8 +12,8 @@ import { getUserProfile } from "@/lib/user/api"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
-import { LayoutClient } from "./layout-client"
 import "./globals.css"
+import { LayoutClient } from "./layout-client"
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -32,7 +31,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`antialiased`}>
         <TanstackQueryProvider>
-          <Banner
+          {/* <Banner
             id="banner-id"
             className="fixed hidden w-full items-center gap-4 bg-white shadow-lg md:flex dark:bg-transparent"
             // buttonClassName="relative top-unset -translate-y-unset"
@@ -49,7 +48,7 @@ export default async function RootLayout({
             // ]}
           >
             🚀 Project evolving more features soon!
-          </Banner>
+          </Banner> */}
           <LayoutClient />
           <SpeedInsights />
           <UserProvider initialUser={userProfile}>
