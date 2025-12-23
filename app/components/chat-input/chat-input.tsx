@@ -218,7 +218,7 @@ export function ChatInput({
                 <Button
                   variant="secondary"
                   className={cn(
-                    "border-border dark:bg-secondary rounded-full border bg-transparent transition-all duration-150",
+                    "border-border dark:bg-secondary hidden rounded-full border bg-transparent transition-all duration-150",
                     sendViaWebhook &&
                       "border-info/20 bg-info-foreground text-info hover:bg-info-foreground hover:text-info"
                   )}
