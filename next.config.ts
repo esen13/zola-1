@@ -22,9 +22,6 @@ const nextConfig: NextConfig = withBundleAnalyzer({
       },
     ],
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },

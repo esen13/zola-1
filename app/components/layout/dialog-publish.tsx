@@ -28,7 +28,7 @@ import { useChatSession } from "@/lib/chat-store/session/provider"
 import { APP_DOMAIN, APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
-import { Check, Copy, Globe, Spinner } from "@phosphor-icons/react"
+import { Check, Copy, Globe, LoaderCircle } from "lucide-react"
 import { useState } from "react"
 
 export function DialogPublish() {
@@ -108,9 +108,9 @@ export function DialogPublish() {
             disabled={isLoading}
           >
             {isLoading ? (
-              <Spinner className="size-5 animate-spin" />
+              <LoaderCircle className="animate-spin" size={18} />
             ) : (
-              <Globe className="size-5" />
+              <Globe size={18} />
             )}
             <span className="sr-only">Make public</span>
           </Button>
