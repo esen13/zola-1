@@ -11,6 +11,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useChats } from "@/lib/chat-store/chats/provider"
+import { useUser } from "@/lib/user-store/provider"
 import {
   ChatTeardropText,
   GithubLogo,
@@ -18,6 +19,7 @@ import {
   NotePencilIcon,
   X,
 } from "@phosphor-icons/react"
+import { Mic } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
@@ -28,8 +30,10 @@ export function AppSidebar() {
   const isMobile = useBreakpoint(768)
   const { setOpenMobile } = useSidebar()
   const { chats, isLoading } = useChats()
+  const { user } = useUser()
   const params = useParams<{ chatId: string }>()
   const currentChatId = params.chatId
+  const isDoctor = user?.role === "doctor"
 
   const groupedChats = useMemo(() => {
     const result = groupChatsByDate(chats, "")
@@ -75,6 +79,18 @@ export function AppSidebar() {
                 ⌘⇧U
               </div>
             </button>
+            {isDoctor && (
+              <button
+                className="hover:bg-accent/80 hover:text-foreground text-primary group/audio relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+                type="button"
+                onClick={() => router.push("/doctors/audio")}
+              >
+                <div className="flex items-center gap-2">
+                  <Mic size={18} />
+                  Аудио записи
+                </div>
+              </button>
+            )}
             <HistoryTrigger
               hasSidebar={false}
               classNameTrigger="bg-transparent hover:bg-accent/80 hover:text-foreground text-primary relative inline-flex w-full items-center rounded-md px-2 py-2 text-sm transition-colors group/search"
