@@ -1,4 +1,5 @@
 import { formatDateTime } from "@/lib/utils/date"
+import Logo from "@/public/logo/airis-stamp.webp"
 import {
   Document,
   Font,
@@ -14,10 +15,6 @@ import {
 Font.register({
   family: "Roboto",
   fonts: [
-    {
-      src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf",
-      fontWeight: 300,
-    },
     {
       src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf",
       fontWeight: 400,
@@ -177,7 +174,7 @@ export const MedicalPdfDocument = ({
             )}
           </View>
           <View>
-            <Image src="/logo/airis-stamp.webp" style={styles.stamp} />
+            <Image src={Logo.src} style={styles.stamp} />
           </View>
         </View>
       </Page>

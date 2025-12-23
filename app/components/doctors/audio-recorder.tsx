@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/components/ui/toast"
 import { formatDuration } from "@/lib/utils/audio"
+import { CirclePause, CirclePlay, CircleStop, Mic, Pause } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type RecordingState = "idle" | "recording" | "paused" | "processing"
@@ -197,21 +198,7 @@ export const AudioRecorder = ({
         {state === "idle" && !audioBlob && (
           <div className="flex flex-col items-center gap-4">
             <Button onClick={startRecording} size="lg" className="w-full">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" x2="12" y1="19" y2="22" />
-              </svg>
+              <Mic className="size-4" />
               Начать запись
             </Button>
           </div>
@@ -227,18 +214,7 @@ export const AudioRecorder = ({
                     : "bg-muted"
                 }`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="text-white"
-                >
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" x2="12" y1="19" y2="22" />
-                </svg>
+                <Mic className="size-8 text-white" />
               </div>
               <div className="font-mono text-2xl font-semibold">
                 {formatDuration(duration)}
@@ -252,6 +228,7 @@ export const AudioRecorder = ({
                   variant="outline"
                   className="flex-1"
                 >
+                  <CirclePause />
                   Пауза
                 </Button>
               ) : (
@@ -260,6 +237,7 @@ export const AudioRecorder = ({
                   variant="outline"
                   className="flex-1"
                 >
+                  <CirclePlay />
                   Продолжить
                 </Button>
               )}
@@ -268,6 +246,7 @@ export const AudioRecorder = ({
                 variant="destructive"
                 className="flex-1"
               >
+                <CircleStop />
                 Остановить
               </Button>
             </div>
