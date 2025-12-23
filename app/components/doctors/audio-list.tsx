@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/toast"
 import { formatDateTime } from "@/lib/utils/date"
 import { useQuery } from "@tanstack/react-query"
+import { Download, NotebookText } from "lucide-react"
 import { useCallback, useState } from "react"
 
 type AudioRecord = {
@@ -130,8 +131,8 @@ export const AudioList = () => {
         {audioList.map((audio) => (
           <div key={audio.id} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">
+              <div className="flex-1">
+                <div className="truncate font-medium whitespace-break-spaces">
                   {audio.audio_filename}
                 </div>
                 <div className="text-muted-foreground mt-1 text-sm">
@@ -158,21 +159,7 @@ export const AudioList = () => {
                     className="flex-1"
                     disabled
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" x2="12" y1="15" y2="3" />
-                    </svg>
+                    <Download />
                     Скачать
                   </Button>
                   <Button
@@ -181,20 +168,7 @@ export const AudioList = () => {
                     className="flex-1"
                     onClick={() => handleOpenDetails(audio)}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                    </svg>
+                    <NotebookText className="size-4" />
                     Подробнее
                   </Button>
                 </div>
