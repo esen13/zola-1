@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/components/ui/toast"
 import { formatDuration } from "@/lib/utils/audio"
-import { CirclePause, CirclePlay, CircleStop, Mic, Pause } from "lucide-react"
+import { CirclePause, CirclePlay, CircleStop, Mic } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type RecordingState = "idle" | "recording" | "paused" | "processing"
@@ -256,7 +256,12 @@ export const AudioRecorder = ({
         {audioBlob && audioUrl && state === "idle" && (
           <div className="space-y-4">
             <div className="rounded-lg border p-4">
-              <audio src={audioUrl} controls className="w-full" />
+              <audio
+                src={audioUrl}
+                controls
+                className="w-full"
+                preload="auto"
+              />
             </div>
             <div className="flex gap-2">
               <Button

@@ -15,12 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/toast"
 import { useUser } from "@/lib/user-store/provider"
 import { formatDateTime } from "@/lib/utils/date"
 import { pdf } from "@react-pdf/renderer"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient, type Query } from "@tanstack/react-query"
+import { Download, Eye } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { MedicalPdfDocument } from "./medical-pdf-document"
@@ -47,6 +49,19 @@ type FormData = {
   final_text: string
 }
 
+// Функция для получения конкретной аудио записи
+const fetchAudioRecord = async (
+  audioId: string
+): Promise<AudioRecord | null> => {
+  const response = await fetch("/api/doctors/audio")
+  if (!response.ok) {
+    throw new Error("Ошибка загрузки списка аудио")
+  }
+  const data = await response.json()
+  const audioList = data.audio || []
+  return audioList.find((a: AudioRecord) => a.id === audioId) || null
+}
+
 export const AudioTranscriptionSheet = ({
   audio,
   open,
@@ -59,6 +74,29 @@ export const AudioTranscriptionSheet = ({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const pdfPreviewRef = useRef<HTMLIFrameElement>(null)
+
+  // Получаем актуальные данные аудио записи с автоматическим обновлением
+  const {
+    data: currentAudio,
+    refetch: refetchAudio,
+    isLoading: isLoadingAudio,
+  } = useQuery<AudioRecord | null>({
+    queryKey: ["doctors-audio", audio?.id],
+    queryFn: () => (audio?.id ? fetchAudioRecord(audio.id) : null),
+    enabled: !!audio?.id && open,
+    refetchOnWindowFocus: true,
+    // Фоновое обновление каждые 5 секунд, если final_text пустой
+    refetchInterval: (query: Query<AudioRecord | null>) => {
+      const audioData = query.state.data
+      if (audioData && !audioData.final_text) {
+        return 5000 // 5 секунд
+      }
+      return false // Останавливаем обновление, если final_text есть
+    },
+  })
+
+  // Используем актуальные данные или переданные через props
+  const displayAudio: AudioRecord | null = currentAudio || audio
 
   const {
     control,
@@ -75,23 +113,30 @@ export const AudioTranscriptionSheet = ({
 
   const finalTextValue = watch("final_text")
 
-  // Сбрасываем форму при изменении audio
+  // Обновляем форму при изменении данных аудио
   useEffect(() => {
-    if (audio) {
+    if (displayAudio) {
       reset({
-        transcribe_text: audio.transcribe_text || "",
-        final_text: audio.final_text || "",
+        transcribe_text: displayAudio.transcribe_text || "",
+        final_text: displayAudio.final_text || "",
       })
     }
-  }, [audio, reset])
+  }, [displayAudio, reset])
+
+  // Обновляем данные при открытии sheet
+  useEffect(() => {
+    if (open && audio?.id) {
+      refetchAudio()
+    }
+  }, [open, audio?.id, refetchAudio])
 
   const onSubmit = async (data: FormData) => {
-    if (!audio) return
+    if (!displayAudio) return
 
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`/api/doctors/audio/${audio.id}`, {
+      const response = await fetch(`/api/doctors/audio/${displayAudio.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -112,8 +157,9 @@ export const AudioTranscriptionSheet = ({
         status: "success",
       })
 
-      // Обновляем список аудио записей
+      // Обновляем список аудио записей и конкретную запись
       queryClient.invalidateQueries({ queryKey: ["doctors-audio"] })
+      await refetchAudio()
 
       // Сбрасываем форму после успешного сохранения
       reset(data)
@@ -133,7 +179,7 @@ export const AudioTranscriptionSheet = ({
   }
 
   const generatePDFBlob = useCallback(async () => {
-    if (!audio || !finalTextValue || !finalTextValue.trim()) {
+    if (!displayAudio || !finalTextValue || !finalTextValue.trim()) {
       return null
     }
 
@@ -143,17 +189,17 @@ export const AudioTranscriptionSheet = ({
     const doc = (
       <MedicalPdfDocument
         finalText={finalTextValue}
-        audioRecord={audio}
+        audioRecord={displayAudio}
         doctorName={doctorName}
       />
     )
 
     const blob = await pdf(doc).toBlob()
     return blob
-  }, [audio, finalTextValue, user])
+  }, [displayAudio, finalTextValue, user])
 
   const handlePreviewPDF = useCallback(async () => {
-    if (!audio || !finalTextValue || !finalTextValue.trim()) {
+    if (!displayAudio || !finalTextValue || !finalTextValue.trim()) {
       return
     }
 
@@ -184,10 +230,10 @@ export const AudioTranscriptionSheet = ({
     } finally {
       setIsGeneratingPDF(false)
     }
-  }, [audio, finalTextValue, generatePDFBlob])
+  }, [displayAudio, finalTextValue, generatePDFBlob])
 
   const handleDownloadPDF = useCallback(async () => {
-    if (!audio || !finalTextValue || !finalTextValue.trim()) {
+    if (!displayAudio || !finalTextValue || !finalTextValue.trim()) {
       return
     }
 
@@ -200,7 +246,7 @@ export const AudioTranscriptionSheet = ({
       const url = URL.createObjectURL(blob)
 
       // Генерируем имя файла
-      const fileName = `medical-report-${audio.audio_filename.replace(
+      const fileName = `medical-report-${displayAudio.audio_filename.replace(
         ".webm",
         ""
       )}.pdf`
@@ -233,7 +279,7 @@ export const AudioTranscriptionSheet = ({
     } finally {
       setIsGeneratingPDF(false)
     }
-  }, [audio, finalTextValue, generatePDFBlob])
+  }, [displayAudio, finalTextValue, generatePDFBlob])
 
   // Очищаем blob URL при закрытии модального окна
   useEffect(() => {
@@ -243,31 +289,39 @@ export const AudioTranscriptionSheet = ({
     }
   }, [isPreviewOpen, pdfPreviewUrl])
 
-  if (!audio) return null
+  if (!displayAudio) return null
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
         <SheetHeader>
-          <SheetTitle>{audio.audio_filename}</SheetTitle>
+          <SheetTitle>{displayAudio.audio_filename}</SheetTitle>
           <SheetDescription>
-            {audio.created_at
-              ? formatDateTime(audio.created_at as string)
+            {displayAudio.created_at
+              ? formatDateTime(displayAudio.created_at as string)
               : "Дата неизвестна"}
           </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-6 px-4 pb-20">
+          {/* Индикатор загрузки при обновлении данных */}
+          {isLoadingAudio && (
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <Spinner />
+              Обновление данных...
+            </div>
+          )}
+
           {/* Аудио плеер */}
-          {audio.signed_url && (
+          {displayAudio.signed_url && (
             <div className="space-y-2">
               <Label>Аудио запись:</Label>
               <div className="rounded-lg border p-4">
                 <audio
-                  src={audio.signed_url}
+                  src={displayAudio.signed_url}
                   controls
                   className="w-full"
-                  preload="none"
+                  preload="auto"
                 />
               </div>
             </div>
@@ -310,26 +364,12 @@ export const AudioTranscriptionSheet = ({
                 >
                   {isGeneratingPDF ? (
                     <>
-                      <div className="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                      <Spinner />
                       Генерация...
                     </>
                   ) : (
                     <>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2"
-                      >
-                        <path d="M1 12s4-4 11-4 11 4 11 4-4 4-11 4-11-4-11-4z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
+                      <Eye />
                       Просмотр PDF
                     </>
                   )}
@@ -348,27 +388,12 @@ export const AudioTranscriptionSheet = ({
                 >
                   {isGeneratingPDF ? (
                     <>
-                      <div className="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                      <Spinner />
                       Генерация...
                     </>
                   ) : (
                     <>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2"
-                      >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" x2="12" y1="15" y2="3" />
-                      </svg>
+                      <Download />
                       Скачать PDF
                     </>
                   )}
