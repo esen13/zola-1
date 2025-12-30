@@ -149,7 +149,7 @@ export const AudioList = () => {
                   src={audio.signed_url}
                   controls
                   className="w-full"
-                  preload="none"
+                  preload="auto"
                 />
                 <div className="flex gap-2">
                   <Button
@@ -181,7 +181,13 @@ export const AudioList = () => {
       <AudioTranscriptionSheet
         audio={selectedAudio}
         open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
+        onOpenChange={(open) => {
+          setIsSheetOpen(open)
+          // Обновляем список при закрытии sheet
+          if (!open) {
+            refetch()
+          }
+        }}
       />
     </Card>
   )
