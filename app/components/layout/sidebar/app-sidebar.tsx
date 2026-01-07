@@ -17,9 +17,8 @@ import {
   GithubLogo,
   MagnifyingGlass,
   NotePencilIcon,
-  X,
 } from "@phosphor-icons/react"
-import { Mic } from "lucide-react"
+import { Calendar, Mic, X } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
@@ -56,7 +55,7 @@ export function AppSidebar() {
               onClick={() => setOpenMobile(false)}
               className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-9 items-center justify-center rounded-md bg-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
-              <X size={24} />
+              <X />
             </button>
           ) : (
             <div className="h-full" />
@@ -67,7 +66,7 @@ export function AppSidebar() {
         <ScrollArea className="flex h-full px-3 [&>div>div]:!block">
           <div className="mt-3 mb-5 flex w-full flex-col items-start gap-0">
             <button
-              className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+              className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
               type="button"
               onClick={() => router.push("/")}
             >
@@ -81,7 +80,7 @@ export function AppSidebar() {
             </button>
             {isDoctor && (
               <button
-                className="hover:bg-accent/80 hover:text-foreground text-primary group/audio relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+                className="hover:bg-accent/80 hover:text-foreground text-primary group/audio relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
                 type="button"
                 onClick={() => router.push("/doctors/audio")}
               >
@@ -91,6 +90,16 @@ export function AppSidebar() {
                 </div>
               </button>
             )}
+            <button
+              className="hover:bg-accent/80 hover:text-foreground text-primary group/calendar relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+              type="button"
+              onClick={() => router.push("/schedule")}
+            >
+              <div className="flex items-center gap-2">
+                <Calendar size={18} />
+                Календарь
+              </div>
+            </button>
             <HistoryTrigger
               hasSidebar={false}
               classNameTrigger="bg-transparent hover:bg-accent/80 hover:text-foreground text-primary relative inline-flex w-full items-center rounded-md px-2 py-2 text-sm transition-colors group/search"
