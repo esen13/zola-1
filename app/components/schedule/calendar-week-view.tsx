@@ -41,23 +41,32 @@ export const CalendarWeekView = ({
     const grouped: Record<string, Appointment[]> = {}
     appointments.forEach((appointment) => {
       const appointmentDate = new Date(appointment.starts_at)
-      const dayKey = format(appointmentDate, "yyyy-MM-dd")
-      if (!grouped[dayKey]) {
-        grouped[dayKey] = []
+      // Проверяем, что запись попадает в диапазон недели
+      const weekStart = startOfWeek(startDate, { locale: ru })
+      const weekEnd = addDays(weekStart, 6)
+      if (appointmentDate >= weekStart && appointmentDate <= weekEnd) {
+        const dayKey = format(appointmentDate, "yyyy-MM-dd")
+        if (!grouped[dayKey]) {
+          grouped[dayKey] = []
+        }
+        grouped[dayKey].push(appointment)
       }
-      grouped[dayKey].push(appointment)
     })
     return grouped
-  }, [appointments])
+  }, [appointments, startDate])
 
   const getTimeSlotPosition = (appointment: Appointment, dayIndex: number) => {
     const start = new Date(appointment.starts_at)
     const end = new Date(appointment.ends_at)
     const startMinutes = start.getHours() * 60 + start.getMinutes()
     const endMinutes = end.getHours() * 60 + end.getMinutes()
-    const duration = endMinutes - startMinutes
-    const topPercent = (startMinutes / (24 * 60)) * 100
-    const heightPercent = (duration / (24 * 60)) * 100
+    const durationMinutes = endMinutes - startMinutes
+
+    // Используем проценты от общей высоты дня (24 часа)
+    const totalMinutes = 24 * 60
+    const topPercent = (startMinutes / totalMinutes) * 100
+    const heightPercent = (durationMinutes / totalMinutes) * 100
+
     return { top: `${topPercent}%`, height: `${heightPercent}%` }
   }
 
@@ -103,7 +112,7 @@ export const CalendarWeekView = ({
                   key={day.toISOString()}
                   className="relative border-r last:border-r-0"
                 >
-                  <div className="relative">
+                  <div className="relative flex flex-col">
                     {/* Time slots */}
                     {hours.map((hour) => (
                       <div
@@ -122,7 +131,7 @@ export const CalendarWeekView = ({
                       return (
                         <div
                           key={appointment.id}
-                          className="absolute right-0 left-0 px-1"
+                          className="absolute right-0 left-0 z-20 px-1"
                           style={{ top, height }}
                         >
                           <CalendarEvent

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import type { UpdateAppointmentInput } from "@/app/types/schedule.types"
 import {
   canDeleteAppointment,
   canEditAppointment,
@@ -7,7 +7,7 @@ import {
   checkTimeConflict,
   validateAppointmentTime,
 } from "@/lib/schedule/validation"
-import type { UpdateAppointmentInput } from "@/app/types/schedule.types"
+import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
@@ -64,16 +64,11 @@ export async function PUT(
       .single()
 
     if (fetchError || !existingAppointment) {
-      return NextResponse.json(
-        { error: "Запись не найдена" },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Запись не найдена" }, { status: 404 })
     }
 
     // Проверка прав на редактирование
-    if (
-      !canEditAppointment(userRole, existingAppointment as any, user.id)
-    ) {
+    if (!canEditAppointment(userRole, existingAppointment as any, user.id)) {
       return NextResponse.json(
         { error: "Недостаточно прав для редактирования записи" },
         { status: 403 }
@@ -181,11 +176,13 @@ export async function PUT(
       .from("appointments")
       .update(updateData)
       .eq("id", appointmentId)
-      .select(`
+      .select(
+        `
         *,
-        doctor:users!appointments_doctor_id_fkey(id, display_name, username, email, staff_id, staff_name),
-        patient:users!appointments_patient_id_fkey(id, display_name, username, email, phone_number)
-      `)
+        doctor:users!doctor_id(id, display_name, username, email, staff_id, staff_name),
+        patient:users!patient_id(id, display_name, username, email, phone_number)
+      `
+      )
       .single()
 
     if (updateError) {
@@ -297,16 +294,11 @@ export async function DELETE(
       .single()
 
     if (fetchError || !existingAppointment) {
-      return NextResponse.json(
-        { error: "Запись не найдена" },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Запись не найдена" }, { status: 404 })
     }
 
     // Проверка прав на удаление
-    if (
-      !canDeleteAppointment(userRole, existingAppointment as any, user.id)
-    ) {
+    if (!canDeleteAppointment(userRole, existingAppointment as any, user.id)) {
       return NextResponse.json(
         { error: "Недостаточно прав для удаления записи" },
         { status: 403 }
@@ -336,4 +328,3 @@ export async function DELETE(
     )
   }
 }
-

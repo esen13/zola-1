@@ -1,20 +1,20 @@
 "use client"
 
-import { useMemo } from "react"
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  addDays,
-  isSameMonth,
-  isSameDay,
-} from "date-fns"
-import { ru } from "date-fns/locale"
-import { CalendarEvent } from "./calendar-event"
 import type { Appointment } from "@/app/types/schedule.types"
 import { cn } from "@/lib/utils"
+import {
+  addDays,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns"
+import { ru } from "date-fns/locale"
+import { useMemo } from "react"
+import { CalendarEvent } from "./calendar-event"
 
 interface CalendarMonthViewProps {
   date: Date
@@ -65,13 +65,13 @@ export const CalendarMonthView = ({
         {weekDays.map((day) => (
           <div
             key={day}
-            className="border-r last:border-r-0 px-2 py-2 text-center text-sm font-medium"
+            className="border-r px-2 py-2 text-center text-sm font-medium last:border-r-0"
           >
             {day}
           </div>
         ))}
       </div>
-      <div className="flex-1 grid grid-cols-7 auto-rows-fr">
+      <div className="grid flex-1 auto-rows-fr grid-cols-7">
         {calendarDays.map((day) => {
           const dateKey = format(day, "yyyy-MM-dd")
           const dayAppointments = appointmentsByDate[dateKey] || []
@@ -82,15 +82,16 @@ export const CalendarMonthView = ({
             <div
               key={day.toISOString()}
               className={cn(
-                "border-r border-b last:border-r-0 p-1 cursor-pointer hover:bg-accent/50 transition-colors",
+                "hover:bg-accent/50 cursor-pointer border-r border-b p-1 transition-colors last:border-r-0",
                 !isCurrentMonth && "bg-muted/50"
               )}
               onClick={() => onDateClick(day)}
             >
               <div
                 className={cn(
-                  "text-sm font-medium mb-1",
-                  isToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+                  "mb-1 text-sm font-medium",
+                  isToday &&
+                    "bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full"
                 )}
               >
                 {format(day, "d", { locale: ru })}
@@ -100,15 +101,12 @@ export const CalendarMonthView = ({
                   <CalendarEvent
                     key={appointment.id}
                     appointment={appointment}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onAppointmentClick(appointment)
-                    }}
-                    className="text-[10px] py-0.5"
+                    onClick={() => onAppointmentClick(appointment)}
+                    className="py-0.5 text-[10px]"
                   />
                 ))}
                 {dayAppointments.length > 3 && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     +{dayAppointments.length - 3} еще
                   </div>
                 )}
@@ -120,4 +118,3 @@ export const CalendarMonthView = ({
     </div>
   )
 }
-

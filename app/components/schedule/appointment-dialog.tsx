@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useCreateAppointment } from "@/app/hooks/use-appointments"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -14,9 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useCreateAppointment } from "@/app/hooks/use-appointments"
-import { format, addMinutes } from "date-fns"
-import { ru } from "date-fns/locale"
+import { Textarea } from "@/components/ui/textarea"
+import { useUser } from "@/lib/user-store/provider"
+import { addMinutes, format } from "date-fns"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 interface Patient {
@@ -62,8 +67,10 @@ export const AppointmentDialog = ({
 }: AppointmentDialogProps) => {
   const [patients, setPatients] = useState<Patient[]>([])
   const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [userRole, setUserRole] = useState<string | null>(null)
+  const { user } = useUser()
   const { createAppointment, isLoading, error } = useCreateAppointment()
+
+  const userRole = user?.role || null
 
   const {
     register,
@@ -74,71 +81,94 @@ export const AppointmentDialog = ({
     reset,
   } = useForm<FormData>()
 
+  // Загружаем данные при открытии модалки
   useEffect(() => {
-    if (open) {
-      // Загружаем пациентов
-      fetch("/api/patients")
-        .then((res) => res.json())
+    if (!open) {
+      reset()
+      return
+    }
+
+    // Загружаем пациентов
+    fetch("/api/patients")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.patients) {
+          setPatients(data.patients)
+        }
+      })
+      .catch(() => {})
+
+    // Загружаем докторов (только для manager/moderator/admin)
+    const canLoadDoctors =
+      userRole === "manager" || userRole === "moderator" || userRole === "admin"
+    if (canLoadDoctors) {
+      fetch("/api/doctors")
+        .then((res) => {
+          if (res.ok) {
+            return res.json()
+          }
+          return null
+        })
         .then((data) => {
-          if (data.patients) {
-            setPatients(data.patients)
+          if (data?.doctors) {
+            setDoctors(data.doctors)
           }
         })
         .catch(() => {})
-
-      // Загружаем докторов
-      fetch("/api/doctors")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.doctors) {
-            setDoctors(data.doctors)
-            setUserRole("doctor") // Предполагаем, что если есть доступ к докторам, то это manager/admin
-          }
-        })
-        .catch(() => {
-          // Если нет доступа, значит это doctor или patient
-          setUserRole("doctor")
-        })
-
-      // Устанавливаем начальное время
-      if (startTime) {
-        const start = format(startTime, "yyyy-MM-dd'T'HH:mm")
-        const end = format(addMinutes(startTime, 30), "yyyy-MM-dd'T'HH:mm")
-        setValue("starts_at", start)
-        setValue("ends_at", end)
-      } else {
-        const now = new Date()
-        const start = format(now, "yyyy-MM-dd'T'HH:mm")
-        const end = format(addMinutes(now, 30), "yyyy-MM-dd'T'HH:mm")
-        setValue("starts_at", start)
-        setValue("ends_at", end)
-      }
-
-      // Устанавливаем выбранного доктора
-      if (selectedDoctorId) {
-        setValue("doctor_id", selectedDoctorId)
-      } else if (doctors.length > 0 && canSelectDoctor) {
-        // Если доктор не выбран и есть доступ к выбору, берем первого
-        setValue("doctor_id", doctors[0].id)
-      }
-
-      // Устанавливаем выбранного пациента
-      if (selectedPatientId) {
-        setValue("patient_id", selectedPatientId)
-      }
-    } else {
-      reset()
     }
-  }, [open, startTime, selectedDoctorId, selectedPatientId, doctors, setValue, reset])
+  }, [open, reset, userRole])
+
+  // Устанавливаем значения формы после загрузки данных
+  useEffect(() => {
+    if (!open) return
+
+    // Устанавливаем начальное время
+    if (startTime) {
+      const start = format(startTime, "yyyy-MM-dd'T'HH:mm")
+      const end = format(addMinutes(startTime, 30), "yyyy-MM-dd'T'HH:mm")
+      setValue("starts_at", start)
+      setValue("ends_at", end)
+    } else {
+      const now = new Date()
+      const start = format(now, "yyyy-MM-dd'T'HH:mm")
+      const end = format(addMinutes(now, 30), "yyyy-MM-dd'T'HH:mm")
+      setValue("starts_at", start)
+      setValue("ends_at", end)
+    }
+
+    // Устанавливаем выбранного доктора
+    if (selectedDoctorId) {
+      setValue("doctor_id", selectedDoctorId)
+    }
+
+    // Устанавливаем выбранного пациента
+    if (selectedPatientId) {
+      setValue("patient_id", selectedPatientId)
+    }
+  }, [
+    open,
+    startTime,
+    selectedDoctorId,
+    selectedPatientId,
+    doctors,
+    userRole,
+    setValue,
+  ])
 
   const onSubmit = async (data: FormData) => {
-    if (!data.doctor_id || !data.patient_id) {
-      toast.error("Заполните все обязательные поля")
+    if (userRole !== "doctor") {
+      if (!data.doctor_id || !data.patient_id) {
+        toast.error("Заполните все обязательные поля (доктор и пациент)")
+        return
+      }
+    }
+    if (!data.patient_id) {
+      toast.error("Заполните все обязательные поля (пациент)")
       return
     }
 
     const result = await createAppointment({
-      doctor_id: data.doctor_id,
+      doctor_id: userRole === "doctor" ? user?.id || "" : data.doctor_id || "",
       patient_id: data.patient_id,
       starts_at: new Date(data.starts_at).toISOString(),
       ends_at: new Date(data.ends_at).toISOString(),
@@ -186,7 +216,7 @@ export const AppointmentDialog = ({
                 </SelectContent>
               </Select>
               {errors.doctor_id && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {errors.doctor_id.message}
                 </p>
               )}
@@ -211,14 +241,12 @@ export const AppointmentDialog = ({
               </SelectContent>
             </Select>
             {errors.patient_id && (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {errors.patient_id.message}
               </p>
             )}
             {!watch("patient_id") && (
-              <p className="text-sm text-destructive">
-                Выберите пациента
-              </p>
+              <p className="text-destructive text-sm">Выберите пациента</p>
             )}
           </div>
 
@@ -231,7 +259,7 @@ export const AppointmentDialog = ({
                 {...register("starts_at", { required: "Обязательное поле" })}
               />
               {errors.starts_at && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {errors.starts_at.message}
                 </p>
               )}
@@ -244,7 +272,7 @@ export const AppointmentDialog = ({
                 {...register("ends_at", { required: "Обязательное поле" })}
               />
               {errors.ends_at && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {errors.ends_at.message}
                 </p>
               )}
@@ -284,4 +312,3 @@ export const AppointmentDialog = ({
     </Dialog>
   )
 }
-

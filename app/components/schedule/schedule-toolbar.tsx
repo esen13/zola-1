@@ -2,7 +2,6 @@
 
 import type { CalendarView } from "@/app/types/schedule.types"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -11,13 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useUser } from "@/lib/user-store/provider"
 import { addDays, format, startOfToday, subDays } from "date-fns"
 import { ru } from "date-fns/locale"
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useState } from "react"
 
 interface Doctor {
@@ -45,8 +41,8 @@ export const ScheduleToolbar = ({
   onDoctorChange,
 }: ScheduleToolbarProps) => {
   const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [userRole, setUserRole] = useState<string | null>(null)
-  const [isLoadingDoctors, setIsLoadingDoctors] = useState(false)
+  const { user } = useUser()
+  const userRole = user?.role || null
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -55,20 +51,22 @@ export const ScheduleToolbar = ({
         if (response.ok) {
           const data = await response.json()
           setDoctors(data.doctors || [])
-          // Если есть доступ к докторам, значит это manager/moderator/admin
-          setUserRole("manager")
-        } else if (response.status === 403) {
-          // Если нет доступа, значит это doctor или patient/user
-          setUserRole("doctor")
         }
       } catch (error) {
         console.error("Ошибка загрузки докторов:", error)
-        setUserRole("doctor")
       }
     }
 
-    fetchDoctors()
-  }, [])
+    // Загружаем докторов только для manager/moderator/admin или doctor
+    if (
+      userRole === "manager" ||
+      userRole === "moderator" ||
+      userRole === "admin" ||
+      userRole === "doctor"
+    ) {
+      fetchDoctors()
+    }
+  }, [userRole])
 
   const handlePrev = () => {
     let newDate: Date

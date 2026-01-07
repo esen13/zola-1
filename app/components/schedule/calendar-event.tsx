@@ -1,7 +1,7 @@
 "use client"
 
-import { cn } from "@/lib/utils"
 import type { Appointment } from "@/app/types/schedule.types"
+import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { ru } from "date-fns/locale"
 
@@ -16,7 +16,9 @@ export const CalendarEvent = ({
   onClick,
   className,
 }: CalendarEventProps) => {
-  const startTime = format(new Date(appointment.starts_at), "HH:mm", { locale: ru })
+  const startTime = format(new Date(appointment.starts_at), "HH:mm", {
+    locale: ru,
+  })
   const endTime = format(new Date(appointment.ends_at), "HH:mm", { locale: ru })
   const title = appointment.title || appointment.patient?.full_name || "Запись"
 
@@ -43,7 +45,7 @@ export const CalendarEvent = ({
     <div
       onClick={onClick}
       className={cn(
-        "group cursor-pointer rounded-md border-l-4 px-2 py-1 text-xs transition-colors hover:bg-accent",
+        "group cursor-pointer rounded-md border-l-4 px-2 py-1 text-xs transition-colors hover:opacity-80",
         getStatusColor(),
         className
       )}
@@ -53,11 +55,10 @@ export const CalendarEvent = ({
         {startTime} - {endTime}
       </div>
       {appointment.patient && (
-        <div className="text-white/70 truncate">
+        <div className="truncate text-white/70">
           {appointment.patient.full_name}
         </div>
       )}
     </div>
   )
 }
-

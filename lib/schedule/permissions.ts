@@ -11,7 +11,11 @@ export const canViewAppointments = (
   if (!userRole) return false
 
   // Manager, moderator, admin могут видеть все записи
-  if (userRole === "manager" || userRole === "moderator" || userRole === "admin") {
+  if (
+    userRole === "manager" ||
+    userRole === "moderator" ||
+    userRole === "admin"
+  ) {
     return true
   }
 
@@ -39,14 +43,20 @@ export const canCreateAppointment = (
 ): boolean => {
   if (!userRole) return false
 
-  // Manager, moderator, admin могут создавать записи для любого доктора
-  if (userRole === "manager" || userRole === "moderator" || userRole === "admin") {
-    return true
-  }
+  console.log("canCreateAppointment", userRole, doctorId, currentUserId)
 
   // Doctor может создавать записи только для себя
   if (userRole === "doctor") {
     return doctorId === currentUserId
+  }
+
+  // Manager, moderator, admin могут создавать записи для любого доктора
+  if (
+    userRole === "manager" ||
+    userRole === "moderator" ||
+    userRole === "admin"
+  ) {
+    return true
   }
 
   // Patient/user не могут создавать записи
@@ -63,17 +73,20 @@ export const canEditAppointment = (
 ): boolean => {
   if (!userRole) return false
 
-  // Manager, moderator, admin могут редактировать любые записи
-  if (userRole === "manager" || userRole === "moderator" || userRole === "admin") {
-    return true
-  }
-
   // Doctor может редактировать только свои записи или записи, которые он создал
   if (userRole === "doctor") {
     return (
       appointment.doctor_id === currentUserId ||
       appointment.created_by === currentUserId
     )
+  }
+  // Manager, moderator, admin могут редактировать любые записи
+  if (
+    userRole === "manager" ||
+    userRole === "moderator" ||
+    userRole === "admin"
+  ) {
+    return true
   }
 
   // Patient/user не могут редактировать записи
@@ -90,17 +103,20 @@ export const canDeleteAppointment = (
 ): boolean => {
   if (!userRole) return false
 
-  // Manager, moderator, admin могут удалять любые записи
-  if (userRole === "manager" || userRole === "moderator" || userRole === "admin") {
-    return true
-  }
-
   // Doctor может удалять только свои записи или записи, которые он создал
   if (userRole === "doctor") {
     return (
       appointment.doctor_id === currentUserId ||
       appointment.created_by === currentUserId
     )
+  }
+  // Manager, moderator, admin могут удалять любые записи
+  if (
+    userRole === "manager" ||
+    userRole === "moderator" ||
+    userRole === "admin"
+  ) {
+    return true
   }
 
   // Patient/user не могут удалять записи
@@ -125,4 +141,3 @@ export const canViewAppointmentsAsPatient = (
   // Остальные роли не используют этот метод
   return false
 }
-

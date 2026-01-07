@@ -1,11 +1,10 @@
 "use client"
 
-import { useMemo } from "react"
-import { format, startOfDay, addHours } from "date-fns"
-import { ru } from "date-fns/locale"
-import { CalendarEvent } from "./calendar-event"
 import type { Appointment } from "@/app/types/schedule.types"
-import { cn } from "@/lib/utils"
+import { addHours, format, isSameDay, startOfDay } from "date-fns"
+import { ru } from "date-fns/locale"
+import { useMemo } from "react"
+import { CalendarEvent } from "./calendar-event"
 
 interface CalendarDayViewProps {
   date: Date
@@ -29,33 +28,34 @@ export const CalendarDayView = ({
     return hoursArray
   }, [date])
 
-  const appointmentsByHour = useMemo(() => {
-    const grouped: Record<number, Appointment[]> = {}
-    appointments.forEach((appointment) => {
+  // Фильтруем записи только для выбранного дня
+  const filteredAppointments = useMemo(() => {
+    const result = appointments.filter((appointment) => {
       const appointmentDate = new Date(appointment.starts_at)
-      const hour = appointmentDate.getHours()
-      if (!grouped[hour]) {
-        grouped[hour] = []
-      }
-      grouped[hour].push(appointment)
+      return isSameDay(appointmentDate, date)
     })
-    return grouped
-  }, [appointments])
+
+    return result
+  }, [appointments, date])
 
   const getTimeSlotPosition = (appointment: Appointment) => {
     const start = new Date(appointment.starts_at)
     const end = new Date(appointment.ends_at)
     const startMinutes = start.getHours() * 60 + start.getMinutes()
     const endMinutes = end.getHours() * 60 + end.getMinutes()
-    const duration = endMinutes - startMinutes
-    const topPercent = (startMinutes / (24 * 60)) * 100
-    const heightPercent = (duration / (24 * 60)) * 100
+    const durationMinutes = endMinutes - startMinutes
+
+    // Используем проценты от общей высоты дня (24 часа)
+    const totalMinutes = 24 * 60
+    const topPercent = (startMinutes / totalMinutes) * 100
+    const heightPercent = (durationMinutes / totalMinutes) * 100
+
     return { top: `${topPercent}%`, height: `${heightPercent}%` }
   }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="h-12 border-b font-medium px-4 flex items-center flex-shrink-0">
+      <div className="flex h-12 flex-shrink-0 items-center border-b px-4 font-medium">
         {format(date, "EEEE, d MMMM yyyy", { locale: ru })}
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -64,31 +64,31 @@ export const CalendarDayView = ({
             {hours.map((hour) => (
               <div
                 key={hour.toISOString()}
-                className="h-16 border-b px-2 py-1 text-xs text-muted-foreground sticky top-0 bg-background z-10"
+                className="text-muted-foreground bg-background sticky top-0 z-10 h-16 border-b px-2 py-1 text-xs"
               >
                 {format(hour, "HH:mm", { locale: ru })}
               </div>
             ))}
           </div>
 
-          <div className="flex-1 relative">
-            <div className="relative">
+          <div className="relative flex-1">
+            <div className="relative flex flex-col">
               {/* Time slots */}
               {hours.map((hour) => (
                 <div
                   key={hour.toISOString()}
-                  className="h-16 border-b cursor-pointer hover:bg-accent/50 transition-colors"
+                  className="hover:bg-accent/50 h-16 cursor-pointer border-b transition-colors"
                   onClick={() => onTimeSlotClick(hour)}
                 />
               ))}
 
               {/* Appointments */}
-              {appointments.map((appointment) => {
+              {filteredAppointments.map((appointment) => {
                 const { top, height } = getTimeSlotPosition(appointment)
                 return (
                   <div
                     key={appointment.id}
-                    className="absolute left-0 right-0 px-2"
+                    className="absolute right-0 left-0 z-20 px-2"
                     style={{ top, height }}
                   >
                     <CalendarEvent
@@ -105,4 +105,3 @@ export const CalendarDayView = ({
     </div>
   )
 }
-

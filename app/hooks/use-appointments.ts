@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
 import type {
   Appointment,
   AppointmentFilters,
   CreateAppointmentInput,
   UpdateAppointmentInput,
 } from "@/app/types/schedule.types"
+import { useEffect, useState } from "react"
 
 interface UseAppointmentsResult {
   appointments: Appointment[]
@@ -20,28 +20,93 @@ export const useAppointments = (
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchAppointments = async () => {
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchAppointments = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const params = new URLSearchParams()
+        if (filters?.doctor_id) {
+          params.append("doctor_id", filters.doctor_id)
+        }
+        if (filters?.patient_id) {
+          params.append("patient_id", filters.patient_id)
+        }
+        if (filters?.start_date) {
+          params.append("start_date", filters.start_date)
+        }
+        if (filters?.end_date) {
+          params.append("end_date", filters.end_date)
+        }
+        if (filters?.status) {
+          params.append("status", filters.status)
+        }
+
+        const response = await fetch(`/api/appointments?${params.toString()}`)
+
+        if (cancelled) return
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || "Ошибка загрузки записей")
+        }
+
+        const data = await response.json()
+        if (!cancelled) {
+          setAppointments(data.appointments || [])
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Ошибка загрузки записей:", err)
+          setError(
+            err instanceof Error ? err.message : "Ошибка загрузки записей"
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchAppointments()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    filters?.doctor_id,
+    filters?.patient_id,
+    filters?.start_date,
+    filters?.end_date,
+    filters?.status,
+  ])
+
+  const refetch = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    const params = new URLSearchParams()
+    if (filters?.doctor_id) {
+      params.append("doctor_id", filters.doctor_id)
+    }
+    if (filters?.patient_id) {
+      params.append("patient_id", filters.patient_id)
+    }
+    if (filters?.start_date) {
+      params.append("start_date", filters.start_date)
+    }
+    if (filters?.end_date) {
+      params.append("end_date", filters.end_date)
+    }
+    if (filters?.status) {
+      params.append("status", filters.status)
+    }
+
     try {
-      setIsLoading(true)
-      setError(null)
-
-      const params = new URLSearchParams()
-      if (filters?.doctor_id) {
-        params.append("doctor_id", filters.doctor_id)
-      }
-      if (filters?.patient_id) {
-        params.append("patient_id", filters.patient_id)
-      }
-      if (filters?.start_date) {
-        params.append("start_date", filters.start_date)
-      }
-      if (filters?.end_date) {
-        params.append("end_date", filters.end_date)
-      }
-      if (filters?.status) {
-        params.append("status", filters.status)
-      }
-
       const response = await fetch(`/api/appointments?${params.toString()}`)
 
       if (!response.ok) {
@@ -59,21 +124,11 @@ export const useAppointments = (
     }
   }
 
-  useEffect(() => {
-    fetchAppointments()
-  }, [
-    filters?.doctor_id,
-    filters?.patient_id,
-    filters?.start_date,
-    filters?.end_date,
-    filters?.status,
-  ])
-
   return {
     appointments,
     isLoading,
     error,
-    refetch: fetchAppointments,
+    refetch,
   }
 }
 
@@ -184,4 +239,3 @@ export const useDeleteAppointment = () => {
 
   return { deleteAppointment, isLoading, error }
 }
-

@@ -1,7 +1,14 @@
-import { useMemo } from "react"
-import { startOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns"
-import { ru } from "date-fns/locale"
 import type { CalendarView } from "@/app/types/schedule.types"
+import {
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns"
+import { ru } from "date-fns/locale"
+import { useMemo } from "react"
 
 export const useScheduleNavigation = (
   view: CalendarView,
@@ -14,7 +21,7 @@ export const useScheduleNavigation = (
       case "day":
         return {
           startDate: startOfDay(date),
-          endDate: startOfDay(date),
+          endDate: endOfDay(date),
         }
 
       case "week":
@@ -32,9 +39,8 @@ export const useScheduleNavigation = (
       default:
         return {
           startDate: startOfDay(date),
-          endDate: startOfDay(date),
+          endDate: endOfDay(date),
         }
     }
   }, [view, selectedDate])
 }
-

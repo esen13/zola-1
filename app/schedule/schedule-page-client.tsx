@@ -14,9 +14,8 @@ import type {
   AppointmentFilters,
   CalendarView,
 } from "@/app/types/schedule.types"
-import { format, startOfDay } from "date-fns"
-import { ru } from "date-fns/locale"
-import { useEffect, useState } from "react"
+import { endOfMonth, format, startOfMonth } from "date-fns"
+import { useMemo, useState } from "react"
 
 export const SchedulePageClient = () => {
   const [view, setView] = useState<CalendarView>("day")
@@ -35,13 +34,26 @@ export const SchedulePageClient = () => {
 
   const { startDate, endDate } = useScheduleNavigation(view, selectedDate)
 
-  // Фильтры для получения записей
-  const filters: AppointmentFilters = {
-    doctor_id: selectedDoctorId || undefined,
-    patient_id: selectedPatientId || undefined,
-    start_date: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
-    end_date: endDate ? format(endDate, "yyyy-MM-dd") : undefined,
-  }
+  // Вычисляем диапазон месяца для загрузки записей (независимо от режима просмотра)
+  const monthRange = useMemo(() => {
+    const monthStart = startOfMonth(selectedDate)
+    const monthEnd = endOfMonth(selectedDate)
+    return {
+      start: monthStart,
+      end: monthEnd,
+    }
+  }, [selectedDate])
+
+  // Фильтры для получения записей - всегда загружаем за весь месяц
+  const filters: AppointmentFilters = useMemo(
+    () => ({
+      doctor_id: selectedDoctorId || undefined,
+      patient_id: selectedPatientId || undefined,
+      start_date: format(monthRange.start, "yyyy-MM-dd"),
+      end_date: format(monthRange.end, "yyyy-MM-dd"),
+    }),
+    [selectedDoctorId, selectedPatientId, monthRange.start, monthRange.end]
+  )
 
   const { appointments, isLoading, error, refetch } = useAppointments(filters)
 
