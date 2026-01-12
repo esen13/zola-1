@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     `)
 
     // Применяем фильтры в зависимости от роли
-    if (userRole === "doctor") {
+    if (userRole === "doctor" || userRole === "admin") {
       // Доктор видит только свои записи
       query = query.eq("doctor_id", user.id)
     } else if (userRole === "patient" || userRole === "user") {

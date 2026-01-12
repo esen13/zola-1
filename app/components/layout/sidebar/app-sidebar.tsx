@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { useUser } from "@/lib/user-store/provider"
+import { isDev } from "@/lib/utils"
 import {
   ChatTeardropText,
   GithubLogo,
@@ -33,6 +34,7 @@ export function AppSidebar() {
   const params = useParams<{ chatId: string }>()
   const currentChatId = params.chatId
   const isDoctor = user?.role === "doctor"
+  const isAdmin = user?.role === "admin"
 
   const groupedChats = useMemo(() => {
     const result = groupChatsByDate(chats, "")
@@ -72,13 +74,13 @@ export function AppSidebar() {
             >
               <div className="flex items-center gap-2">
                 <NotePencilIcon size={20} />
-                New Chat
+                Новый чат
               </div>
               <div className="text-muted-foreground ml-auto text-xs opacity-0 duration-150 group-hover/new-chat:opacity-100">
                 ⌘⇧U
               </div>
             </button>
-            {isDoctor && (
+            {(isDoctor || isAdmin) && (
               <button
                 className="hover:bg-accent/80 hover:text-foreground text-primary group/audio relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
                 type="button"
@@ -90,23 +92,25 @@ export function AppSidebar() {
                 </div>
               </button>
             )}
-            <button
-              className="hover:bg-accent/80 hover:text-foreground text-primary group/calendar relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
-              type="button"
-              onClick={() => router.push("/schedule")}
-            >
-              <div className="flex items-center gap-2">
-                <Calendar size={18} />
-                Календарь
-              </div>
-            </button>
+            {isAdmin && (
+              <button
+                className="hover:bg-accent/80 hover:text-foreground text-primary group/calendar relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+                type="button"
+                onClick={() => router.push("/schedule")}
+              >
+                <div className="flex items-center gap-2">
+                  <Calendar size={18} />
+                  Календарь
+                </div>
+              </button>
+            )}
             <HistoryTrigger
               hasSidebar={false}
               classNameTrigger="bg-transparent hover:bg-accent/80 hover:text-foreground text-primary relative inline-flex w-full items-center rounded-md px-2 py-2 text-sm transition-colors group/search"
               icon={<MagnifyingGlass size={24} className="mr-2" />}
               label={
                 <div className="flex w-full items-center gap-2">
-                  <span>Search</span>
+                  <span>Поиск</span>
                   <div className="text-muted-foreground ml-auto text-xs opacity-0 duration-150 group-hover/search:opacity-100">
                     ⌘+K
                   </div>
@@ -136,33 +140,35 @@ export function AppSidebar() {
                 className="text-muted-foreground mb-1 opacity-40"
               />
               <div className="text-muted-foreground text-center">
-                <p className="mb-1 text-base font-medium">No chats yet</p>
-                <p className="text-sm opacity-70">Start a new conversation</p>
+                <p className="mb-1 text-base font-medium">Нет чатов</p>
+                <p className="text-sm opacity-70">Начните новую беседу</p>
               </div>
             </div>
           )}
         </ScrollArea>
       </SidebarContent>
-      <SidebarFooter className="border-border/40 mb-2 border-t p-3">
-        <a
-          href="https://github.com/esen13"
-          className="hover:bg-muted hidden! items-center gap-2 rounded-md p-2"
-          target="_blank"
-          aria-label="Star the repo on GitHub"
-        >
-          <div className="rounded-full border p-1">
-            <GithubLogo className="size-4" />
-          </div>
-          <div className="flex flex-col">
-            <div className="text-sidebar-foreground text-sm font-medium">
-              Airis is open source
+      {isDev && (
+        <SidebarFooter className="border-border/40 mb-2 border-t p-3">
+          <a
+            href="https://github.com/esen13"
+            className="hover:bg-muted hidden! items-center gap-2 rounded-md p-2"
+            target="_blank"
+            aria-label="Star the repo on GitHub"
+          >
+            <div className="rounded-full border p-1">
+              <GithubLogo className="size-4" />
             </div>
-            <div className="text-sidebar-foreground/70 text-xs">
-              Star the repo on GitHub!
+            <div className="flex flex-col">
+              <div className="text-sidebar-foreground text-sm font-medium">
+                Airis is open source
+              </div>
+              <div className="text-sidebar-foreground/70 text-xs">
+                Star the repo on GitHub!
+              </div>
             </div>
-          </div>
-        </a>
-      </SidebarFooter>
+          </a>
+        </SidebarFooter>
+      )}
     </Sidebar>
   )
 }

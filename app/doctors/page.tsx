@@ -18,6 +18,9 @@ export default async function DoctorsPage() {
     error: authError,
   } = await supabase.auth.getUser()
 
+  console.log("authError", authError)
+  console.log("user", user)
+
   if (authError || !user) {
     redirect("/")
   }
@@ -29,13 +32,16 @@ export default async function DoctorsPage() {
     .eq("id", user.id)
     .single()
 
+  console.log("profileError", profileError)
+  console.log("userProfile", userProfile)
+
   if (profileError || !userProfile) {
     redirect("/")
   }
 
   // Проверяем роль пользователя
   const userRole = (userProfile as any).role
-  if (userRole !== "doctor") {
+  if (userRole !== "doctor" && userRole !== "admin") {
     // Если роль не доктор, перенаправляем на главную страницу чата
     redirect("/")
   }

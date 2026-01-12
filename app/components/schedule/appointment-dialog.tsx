@@ -156,7 +156,7 @@ export const AppointmentDialog = ({
   ])
 
   const onSubmit = async (data: FormData) => {
-    if (userRole !== "doctor") {
+    if (userRole !== "doctor" && userRole !== "admin") {
       if (!data.doctor_id || !data.patient_id) {
         toast.error("Заполните все обязательные поля (доктор и пациент)")
         return
@@ -168,7 +168,10 @@ export const AppointmentDialog = ({
     }
 
     const result = await createAppointment({
-      doctor_id: userRole === "doctor" ? user?.id || "" : data.doctor_id || "",
+      doctor_id:
+        userRole === "doctor" || userRole === "admin"
+          ? user?.id || ""
+          : data.doctor_id || "",
       patient_id: data.patient_id,
       starts_at: new Date(data.starts_at).toISOString(),
       ends_at: new Date(data.ends_at).toISOString(),

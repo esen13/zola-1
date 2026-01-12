@@ -12,8 +12,8 @@ import Link from "next/link"
 export function ButtonAudio() {
   const { user } = useUser()
   const isDoctor = user?.role === "doctor"
-
-  if (!isDoctor) return null
+  const isAdmin = user?.role === "admin"
+  if (!isDoctor && !isAdmin) return null
 
   return (
     <Tooltip>

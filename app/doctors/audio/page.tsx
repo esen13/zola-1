@@ -35,7 +35,7 @@ export default async function AudioPage() {
 
   // Проверяем роль пользователя
   const userRole = (userProfile as any).role
-  if (userRole !== "doctor") {
+  if (userRole !== "doctor" && userRole !== "admin") {
     // Если роль не доктор, перенаправляем на главную страницу чата
     redirect("/")
   }
@@ -48,4 +48,3 @@ export default async function AudioPage() {
     </MessagesProvider>
   )
 }
-

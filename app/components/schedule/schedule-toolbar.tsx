@@ -115,15 +115,15 @@ export const ScheduleToolbar = ({
     <div className="bg-background border-b px-4 py-3">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">Calendar</h1>
+          <h1 className="text-xl font-semibold">Календарь</h1>
           <Tabs
             value={view}
             onValueChange={(v) => onViewChange(v as CalendarView)}
           >
             <TabsList>
-              <TabsTrigger value="day">Day</TabsTrigger>
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="month">Month</TabsTrigger>
+              <TabsTrigger value="day">День</TabsTrigger>
+              <TabsTrigger value="week">Неделя</TabsTrigger>
+              <TabsTrigger value="month">Месяц</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
