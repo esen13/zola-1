@@ -42,7 +42,7 @@ export function SettingsContent({ isDrawer = false }: SettingsContentProps) {
     >
       {isDrawer && (
         <div className="border-border mb-2 flex items-center justify-between border-b px-4 pb-2">
-          <h2 className="text-lg font-medium">Settings</h2>
+          <h2 className="text-lg font-medium">Настройки</h2>
           <DrawerClose asChild>
             <Button variant="ghost" size="icon">
               <XIcon className="size-4" />
@@ -69,68 +69,76 @@ export function SettingsContent({ isDrawer = false }: SettingsContentProps) {
                   className="ml-6 flex shrink-0 items-center gap-2"
                 >
                   <GearSixIcon className="size-4" />
-                  <span>General</span>
+                  <span>Общие</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="appearance"
                   className="flex shrink-0 items-center gap-2"
                 >
                   <PaintBrushIcon className="size-4" />
-                  <span>Appearance</span>
+                  <span>Внешний вид</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="apikeys"
-                  className="flex shrink-0 items-center gap-2"
-                >
-                  <KeyIcon className="size-4" />
-                  <span>API Keys</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="models"
-                  className="flex shrink-0 items-center gap-2"
-                >
-                  <CubeIcon className="size-4" />
-                  <span>Models</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="connections"
-                  className="flex shrink-0 items-center gap-2"
-                >
-                  <PlugsConnectedIcon className="size-4" />
-                  <span>Connections</span>
-                </TabsTrigger>
+                {isDev && (
+                  <TabsTrigger
+                    value="apikeys"
+                    className="flex shrink-0 items-center gap-2"
+                  >
+                    <KeyIcon className="size-4" />
+                    <span>API Keys</span>
+                  </TabsTrigger>
+                )}
+                {isDev && (
+                  <TabsTrigger
+                    value="models"
+                    className="flex shrink-0 items-center gap-2"
+                  >
+                    <CubeIcon className="size-4" />
+                    <span>Models</span>
+                  </TabsTrigger>
+                )}
+                {isDev && (
+                  <TabsTrigger
+                    value="connections"
+                    className="flex shrink-0 items-center gap-2"
+                  >
+                    <PlugsConnectedIcon className="size-4" />
+                    <span>Connections</span>
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
 
             {/* Mobile tabs content */}
             <TabsContent value="general" className="space-y-6 px-6">
               <UserProfile />
-              {isSupabaseEnabled && (
-                <>
-                  <AccountManagement />
-                </>
-              )}
+              {isSupabaseEnabled && <AccountManagement />}
             </TabsContent>
 
             <TabsContent value="appearance" className="space-y-6 px-6">
               <ThemeSelection />
               <LayoutSettings />
-              <InteractionPreferences />
+              {isDev && <InteractionPreferences />}
             </TabsContent>
 
-            <TabsContent value="apikeys" className="px-6">
-              <ByokSection />
-            </TabsContent>
+            {isDev && (
+              <TabsContent value="apikeys" className="px-6">
+                <ByokSection />
+              </TabsContent>
+            )}
 
-            <TabsContent value="models" className="px-6">
-              <ModelsSettings />
-              {/* <ModelVisibilitySettings /> */}
-            </TabsContent>
+            {isDev && (
+              <TabsContent value="models" className="px-6">
+                <ModelsSettings />
+                {/* <ModelVisibilitySettings /> */}
+              </TabsContent>
+            )}
 
-            <TabsContent value="connections" className="space-y-6 px-6">
-              {!isDev && <ConnectionsPlaceholder />}
-              {isDev && <DeveloperTools />}
-            </TabsContent>
+            {isDev && (
+              <TabsContent value="connections" className="space-y-6 px-6">
+                <ConnectionsPlaceholder />
+                <DeveloperTools />
+              </TabsContent>
+            )}
           </div>
         ) : (
           // Desktop version - tabs on left
@@ -143,7 +151,7 @@ export function SettingsContent({ isDrawer = false }: SettingsContentProps) {
                 >
                   <div className="flex items-center gap-2">
                     <GearSixIcon className="size-4" />
-                    <span>General</span>
+                    <span>Общие</span>
                   </div>
                 </TabsTrigger>
 
@@ -153,37 +161,43 @@ export function SettingsContent({ isDrawer = false }: SettingsContentProps) {
                 >
                   <div className="flex items-center gap-2">
                     <PaintBrushIcon className="size-4" />
-                    <span>Appearance</span>
+                    <span>Внешний вид</span>
                   </div>
                 </TabsTrigger>
 
-                <TabsTrigger
-                  value="apikeys"
-                  className="w-full justify-start rounded-md px-3 py-2 text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <KeyIcon className="size-4" />
-                    <span>API Keys</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="models"
-                  className="w-full justify-start rounded-md px-3 py-2 text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <CubeIcon className="size-4" />
-                    <span>Models</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="connections"
-                  className="w-full justify-start rounded-md px-3 py-2 text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <PlugsConnectedIcon className="size-4" />
-                    <span>Connections</span>
-                  </div>
-                </TabsTrigger>
+                {isDev && (
+                  <TabsTrigger
+                    value="apikeys"
+                    className="w-full justify-start rounded-md px-3 py-2 text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <KeyIcon className="size-4" />
+                      <span>API Keys</span>
+                    </div>
+                  </TabsTrigger>
+                )}
+                {isDev && (
+                  <TabsTrigger
+                    value="models"
+                    className="w-full justify-start rounded-md px-3 py-2 text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CubeIcon className="size-4" />
+                      <span>Models</span>
+                    </div>
+                  </TabsTrigger>
+                )}
+                {isDev && (
+                  <TabsTrigger
+                    value="connections"
+                    className="w-full justify-start rounded-md px-3 py-2 text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <PlugsConnectedIcon className="size-4" />
+                      <span>Connections</span>
+                    </div>
+                  </TabsTrigger>
+                )}
               </div>
             </TabsList>
 
@@ -191,17 +205,13 @@ export function SettingsContent({ isDrawer = false }: SettingsContentProps) {
             <div className="flex-1 overflow-auto px-6 pt-4">
               <TabsContent value="general" className="mt-0 space-y-6">
                 <UserProfile />
-                {isSupabaseEnabled && (
-                  <>
-                    <AccountManagement />
-                  </>
-                )}
+                {isSupabaseEnabled && <AccountManagement />}
               </TabsContent>
 
               <TabsContent value="appearance" className="mt-0 space-y-6">
                 <ThemeSelection />
                 <LayoutSettings />
-                <InteractionPreferences />
+                {isDev && <InteractionPreferences />}
               </TabsContent>
 
               <TabsContent value="apikeys" className="mt-0 space-y-6">
@@ -214,7 +224,7 @@ export function SettingsContent({ isDrawer = false }: SettingsContentProps) {
               </TabsContent>
 
               <TabsContent value="connections" className="mt-0 space-y-6">
-                {!isDev && <ConnectionsPlaceholder />}
+                {isDev && <ConnectionsPlaceholder />}
                 {isDev && <DeveloperTools />}
               </TabsContent>
             </div>

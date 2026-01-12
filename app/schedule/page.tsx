@@ -2,11 +2,11 @@ import { LayoutApp } from "@/app/components/layout/layout-app"
 import { MessagesProvider } from "@/lib/chat-store/messages/provider"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { DoctorsPageClient } from "./doctors-page-client"
+import { SchedulePageClient } from "./schedule-page-client"
 
 export const dynamic = "force-dynamic"
 
-export default async function DoctorsPage() {
+export default async function SchedulePage() {
   const supabase = await createClient()
   if (!supabase) {
     redirect("/")
@@ -17,9 +17,6 @@ export default async function DoctorsPage() {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser()
-
-  console.log("authError", authError)
-  console.log("user", user)
 
   if (authError || !user) {
     redirect("/")
@@ -32,25 +29,26 @@ export default async function DoctorsPage() {
     .eq("id", user.id)
     .single()
 
-  console.log("profileError", profileError)
-  console.log("userProfile", userProfile)
-
   if (profileError || !userProfile) {
     redirect("/")
   }
 
   // Проверяем роль пользователя
+  // Разрешаем доступ для doctor, manager, moderator, admin, patient, user
   const userRole = (userProfile as any).role
-  if (userRole !== "doctor" && userRole !== "admin") {
-    // Если роль не доктор, перенаправляем на главную страницу чата
+  const allowedRoles = ["doctor", "manager", "moderator", "admin", "patient", "user"]
+
+  if (!userRole || !allowedRoles.includes(userRole)) {
+    // Если роль не разрешена, перенаправляем на главную страницу
     redirect("/")
   }
 
   return (
     <MessagesProvider>
       <LayoutApp>
-        <DoctorsPageClient />
+        <SchedulePageClient />
       </LayoutApp>
     </MessagesProvider>
   )
 }
+

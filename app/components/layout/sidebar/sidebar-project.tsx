@@ -36,7 +36,7 @@ export function SidebarProject() {
       >
         <div className="flex items-center gap-2">
           <FolderPlusIcon size={20} />
-          New project
+          Новый проект
         </div>
       </button>
 

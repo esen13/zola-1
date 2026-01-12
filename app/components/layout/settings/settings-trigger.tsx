@@ -31,7 +31,7 @@ export function SettingsTrigger({ onOpenChange }: SettingsTriggerProps) {
   const trigger = (
     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
       <User className="size-4" />
-      <span>Settings</span>
+      <span>Настройки</span>
     </DropdownMenuItem>
   )
 
@@ -51,7 +51,7 @@ export function SettingsTrigger({ onOpenChange }: SettingsTriggerProps) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="flex h-[80%] min-h-[480px] w-full flex-col gap-0 p-0 sm:max-w-[768px]">
         <DialogHeader className="border-border border-b px-6 py-5">
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>Настройки</DialogTitle>
         </DialogHeader>
         <SettingsContent />
       </DialogContent>
