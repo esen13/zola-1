@@ -31,8 +31,10 @@ export function AccountManagement() {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h3 className="text-sm font-medium">Account</h3>
-        <p className="text-muted-foreground text-xs">Log out on this device</p>
+        <h3 className="text-sm font-medium">Аккаунт</h3>
+        <p className="text-muted-foreground text-xs">
+          Выйти из аккаунта на этом устройстве
+        </p>
       </div>
       <Button
         variant="default"
@@ -41,7 +43,7 @@ export function AccountManagement() {
         onClick={handleSignOut}
       >
         <SignOut className="size-4" />
-        <span>Sign out</span>
+        <span>Выйти</span>
       </Button>
     </div>
   )

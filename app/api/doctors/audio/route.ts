@@ -51,9 +51,11 @@ export async function POST(request: Request) {
 
     // Проверяем роль пользователя
     const userRole = (userProfile as any).role
-    if (userRole !== "doctor") {
+    if (userRole !== "doctor" && userRole !== "admin") {
       return NextResponse.json(
-        { error: "Доступ запрещен. Требуется роль доктора." },
+        {
+          error: "Доступ запрещен. Требуется роль доктора или администратора.",
+        },
         { status: 403 }
       )
     }
@@ -223,9 +225,11 @@ export async function GET() {
 
     // Проверяем роль пользователя
     const userRole = (userProfile as any).role
-    if (userRole !== "doctor") {
+    if (userRole !== "doctor" && userRole !== "admin") {
       return NextResponse.json(
-        { error: "Доступ запрещен. Требуется роль доктора." },
+        {
+          error: "Доступ запрещен. Требуется роль доктора или администратора.",
+        },
         { status: 403 }
       )
     }

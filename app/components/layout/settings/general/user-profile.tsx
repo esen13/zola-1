@@ -11,7 +11,7 @@ export function UserProfile() {
 
   return (
     <div>
-      <h3 className="mb-3 text-sm font-medium">Profile</h3>
+      <h3 className="mb-3 text-sm font-medium">Профиль</h3>
       <div className="flex items-center space-x-4">
         <div className="bg-muted flex items-center justify-center overflow-hidden rounded-full">
           {user?.profile_image ? (

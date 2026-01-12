@@ -1,4 +1,4 @@
-import { ArrowLeft } from "@phosphor-icons/react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 export function HeaderGoBack({ href = "/" }: { href?: string }) {
@@ -9,7 +9,7 @@ export function HeaderGoBack({ href = "/" }: { href?: string }) {
         prefetch
         className="text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md px-2 py-1"
       >
-        <ArrowLeft className="text-foreground size-5" />
+        <ArrowLeft className="text-foreground" />
         <span className="font-base ml-2 hidden text-sm sm:inline-block">
           Back to Chat
         </span>

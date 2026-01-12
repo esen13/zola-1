@@ -8,14 +8,14 @@ export function ThemeSelection() {
   const [selectedTheme, setSelectedTheme] = useState(theme || "system")
 
   const themes = [
-    { id: "system", name: "System", colors: ["#ffffff", "#1a1a1a"] },
-    { id: "light", name: "Light", colors: ["#ffffff"] },
-    { id: "dark", name: "Dark", colors: ["#1a1a1a"] },
+    { id: "system", name: "Системная", colors: ["#ffffff", "#1a1a1a"] },
+    { id: "light", name: "Светлая", colors: ["#ffffff"] },
+    { id: "dark", name: "Тёмная", colors: ["#1a1a1a"] },
   ]
 
   return (
     <div>
-      <h4 className="mb-3 text-sm font-medium">Theme</h4>
+      <h4 className="mb-3 text-sm font-medium">Тема</h4>
       <div className="grid grid-cols-3 gap-3">
         {themes.map((theme) => (
           <button
