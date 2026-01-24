@@ -82,7 +82,7 @@ export const CalendarMonthView = ({
             <div
               key={day.toISOString()}
               className={cn(
-                "hover:bg-accent/50 cursor-pointer border-r border-b p-1 transition-colors last:border-r-0",
+                "hover:bg-accent/50 cursor-pointer border-r border-b p-1 transition-colors last:border-r-0 min-h-[82px]",
                 !isCurrentMonth && "bg-muted/50"
               )}
               onClick={() => onDateClick(day)}

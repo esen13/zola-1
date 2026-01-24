@@ -20,6 +20,7 @@ type AudioRecord = {
   signed_url: string | null
   transcribe_text?: string | null
   final_text?: string | null
+  ai_diagnoses?: string | null
 }
 
 const fetchAudioList = async (): Promise<AudioRecord[]> => {

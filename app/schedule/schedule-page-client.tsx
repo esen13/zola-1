@@ -8,13 +8,23 @@ import { CalendarWeekView } from "@/app/components/schedule/calendar-week-view"
 import { PatientsSidebar } from "@/app/components/schedule/patients-sidebar"
 import { ScheduleToolbar } from "@/app/components/schedule/schedule-toolbar"
 import { useAppointments } from "@/app/hooks/use-appointments"
+import { useBreakpoint } from "@/app/hooks/use-breakpoint"
 import { useScheduleNavigation } from "@/app/hooks/use-schedule-navigation"
 import type {
   Appointment,
   AppointmentFilters,
   CalendarView,
 } from "@/app/types/schedule.types"
+import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { endOfMonth, format, startOfMonth } from "date-fns"
+import { Users } from "lucide-react"
 import { useMemo, useState } from "react"
 
 export const SchedulePageClient = () => {
@@ -31,6 +41,8 @@ export const SchedulePageClient = () => {
   const [appointmentStartTime, setAppointmentStartTime] = useState<Date | null>(
     null
   )
+  const [isPatientsSheetOpen, setIsPatientsSheetOpen] = useState(false)
+  const isMobile = useBreakpoint(768)
 
   const { startDate, endDate } = useScheduleNavigation(view, selectedDate)
 
@@ -114,37 +126,72 @@ export const SchedulePageClient = () => {
 
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto">
-          {view === "day" && (
-            <CalendarDayView
-              date={selectedDate}
-              appointments={appointments || []}
-              onTimeSlotClick={handleTimeSlotClick}
-              onAppointmentClick={handleAppointmentClick}
-            />
-          )}
-          {view === "week" && (
-            <CalendarWeekView
-              startDate={startDate}
-              appointments={appointments || []}
-              onTimeSlotClick={handleTimeSlotClick}
-              onAppointmentClick={handleAppointmentClick}
-            />
-          )}
-          {view === "month" && (
-            <CalendarMonthView
-              date={selectedDate}
-              appointments={appointments || []}
-              onDateClick={handleDateChange}
-              onAppointmentClick={handleAppointmentClick}
-            />
-          )}
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {view === "day" && (
+                <CalendarDayView
+                  date={selectedDate}
+                  appointments={appointments || []}
+                  onTimeSlotClick={handleTimeSlotClick}
+                  onAppointmentClick={handleAppointmentClick}
+                />
+              )}
+              {view === "week" && (
+                <CalendarWeekView
+                  startDate={startDate}
+                  appointments={appointments || []}
+                  onTimeSlotClick={handleTimeSlotClick}
+                  onAppointmentClick={handleAppointmentClick}
+                />
+              )}
+              {view === "month" && (
+                <CalendarMonthView
+                  date={selectedDate}
+                  appointments={appointments || []}
+                  onDateClick={handleDateChange}
+                  onAppointmentClick={handleAppointmentClick}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
-        <PatientsSidebar
-          selectedPatientId={selectedPatientId}
-          onPatientSelect={handlePatientSelect}
-        />
+        {!isMobile && (
+          <PatientsSidebar
+            selectedPatientId={selectedPatientId}
+            onPatientSelect={handlePatientSelect}
+          />
+        )}
       </div>
+
+      {isMobile && (
+        <Sheet open={isPatientsSheetOpen} onOpenChange={setIsPatientsSheetOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg"
+              size="icon"
+            >
+              <Users className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-sm">
+            <SheetHeader className="border-b px-4 py-4">
+              <SheetTitle>Пациенты</SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 overflow-hidden">
+              <PatientsSidebar
+                selectedPatientId={selectedPatientId}
+                onPatientSelect={(patientId) => {
+                  handlePatientSelect(patientId)
+                  setIsPatientsSheetOpen(false)
+                }}
+                isInSheet={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
 
       {isAppointmentDialogOpen && (
         <AppointmentDialog

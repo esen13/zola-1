@@ -1,5 +1,6 @@
 "use client"
 
+import { Markdown } from "@/components/prompt-kit/markdown"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,7 +23,8 @@ import { useUser } from "@/lib/user-store/provider"
 import { formatDateTime } from "@/lib/utils/date"
 import { pdf } from "@react-pdf/renderer"
 import { useQuery, useQueryClient, type Query } from "@tanstack/react-query"
-import { Download, Eye } from "lucide-react"
+import { Bot, Copy, Download, Eye, Pencil } from "lucide-react"
+import { marked } from "marked"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { MedicalPdfDocument } from "./medical-pdf-document"
@@ -36,6 +38,7 @@ type AudioRecord = {
   signed_url: string | null
   transcribe_text?: string | null
   final_text?: string | null
+  ai_diagnoses?: string | null
 }
 
 type AudioTranscriptionSheetProps = {
@@ -47,6 +50,7 @@ type AudioTranscriptionSheetProps = {
 type FormData = {
   transcribe_text: string
   final_text: string
+  ai_diagnoses: string
 }
 
 // Функция для получения конкретной аудио записи
@@ -71,9 +75,13 @@ export const AudioTranscriptionSheet = ({
   const { user } = useUser()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const pdfPreviewRef = useRef<HTMLIFrameElement>(null)
+  const [isEditModeTranscribe, setIsEditModeTranscribe] = useState(false)
+  const [isEditModeFinal, setIsEditModeFinal] = useState(false)
+  const [isEditModeAI, setIsEditModeAI] = useState(false)
 
   // Получаем актуальные данные аудио записи с автоматическим обновлением
   const {
@@ -108,6 +116,7 @@ export const AudioTranscriptionSheet = ({
     defaultValues: {
       transcribe_text: "",
       final_text: "",
+      ai_diagnoses: "",
     },
   })
 
@@ -119,6 +128,7 @@ export const AudioTranscriptionSheet = ({
       reset({
         transcribe_text: displayAudio.transcribe_text || "",
         final_text: displayAudio.final_text || "",
+        ai_diagnoses: displayAudio.ai_diagnoses || "",
       })
     }
   }, [displayAudio, reset])
@@ -144,6 +154,7 @@ export const AudioTranscriptionSheet = ({
         body: JSON.stringify({
           transcribe_text: data.transcribe_text || null,
           final_text: data.final_text || null,
+          ai_diagnoses: data.ai_diagnoses || null,
         }),
       })
 
@@ -281,6 +292,126 @@ export const AudioTranscriptionSheet = ({
     }
   }, [displayAudio, finalTextValue, generatePDFBlob])
 
+  const handleGenerateAIDiagnosis = useCallback(async () => {
+    if (!displayAudio) return
+
+    setIsLoadingAI(true)
+
+    try {
+      const response = await fetch(
+        `/api/doctors/audio/${displayAudio.id}/ai-diagnosis`,
+        {
+          method: "POST",
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Ошибка генерации AI отчета")
+      }
+
+      const data = await response.json()
+
+      // Обновляем форму с полученным диагнозом
+      reset({
+        transcribe_text: displayAudio.transcribe_text || "",
+        final_text: displayAudio.final_text || "",
+        ai_diagnoses: data.ai_diagnoses || "",
+      })
+
+      toast({
+        title: "AI отчет сгенерирован",
+        status: "success",
+      })
+
+      // Обновляем данные
+      queryClient.invalidateQueries({ queryKey: ["doctors-audio"] })
+      await refetchAudio()
+    } catch (error) {
+      console.error("Ошибка генерации AI отчета:", error)
+      toast({
+        title: "Ошибка генерации AI отчета",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Не удалось сгенерировать AI отчет",
+        status: "error",
+      })
+    } finally {
+      setIsLoadingAI(false)
+    }
+  }, [displayAudio, reset, queryClient, refetchAudio])
+
+  const handleCopy = useCallback(async (text: string) => {
+    if (!text || !text.trim()) {
+      toast({
+        title: "Нет текста для копирования",
+        status: "error",
+      })
+      return
+    }
+
+    try {
+      // Конвертируем markdown в HTML
+      const html = marked.parse(text, {
+        breaks: true,
+        gfm: true,
+      }) as string
+
+      // Создаем временный элемент для копирования HTML
+      const tempDiv = document.createElement("div")
+      tempDiv.innerHTML = html
+      tempDiv.style.position = "fixed"
+      tempDiv.style.left = "-9999px"
+      tempDiv.style.top = "-9999px"
+      document.body.appendChild(tempDiv)
+
+      // Выделяем содержимое
+      const range = document.createRange()
+      range.selectNodeContents(tempDiv)
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+
+      // Копируем через execCommand (поддерживает HTML)
+      const success = document.execCommand("copy")
+      
+      // Удаляем временный элемент
+      document.body.removeChild(tempDiv)
+      selection?.removeAllRanges()
+
+      if (success) {
+        toast({
+          title: "Текст скопирован с форматированием",
+          status: "success",
+        })
+      } else {
+        // Fallback: копируем как plain text
+        await navigator.clipboard.writeText(text)
+        toast({
+          title: "Текст скопирован",
+          status: "success",
+        })
+      }
+    } catch (error) {
+      console.error("Ошибка копирования:", error)
+      // Fallback: копируем как plain text
+      try {
+        await navigator.clipboard.writeText(text)
+        toast({
+          title: "Текст скопирован",
+          status: "success",
+        })
+      } catch (fallbackError) {
+        toast({
+          title: "Ошибка копирования",
+          description: "Не удалось скопировать текст",
+          status: "error",
+        })
+      }
+    }
+  }, [])
+
   // Очищаем blob URL при закрытии модального окна
   useEffect(() => {
     if (!isPreviewOpen && pdfPreviewUrl) {
@@ -293,7 +424,7 @@ export const AudioTranscriptionSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+      <SheetContent className="w-full overflow-y-auto sm:max-w-1/2">
         <SheetHeader>
           <SheetTitle>{displayAudio.audio_filename}</SheetTitle>
           <SheetDescription>
@@ -328,26 +459,117 @@ export const AudioTranscriptionSheet = ({
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+            {/* AI Диагноз */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Предварительный диагноз (Отчет от Airis)</h3>
+              <div className="space-y-2">
+                <Label htmlFor="ai_diagnoses" className="hidden">
+                  AI отчет:
+                </Label>
+                <div className="relative">
+                  <Controller
+                    name="ai_diagnoses"
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        {isEditModeAI ? (
+                          <Textarea
+                            {...field}
+                            id="ai_diagnoses"
+                            placeholder="AI отчет предварительного диагноза..."
+                            className="min-h-[200px] resize-y"
+                            disabled={isSubmitting}
+                          />
+                        ) : (
+                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none">
+                            <Markdown>{field.value || ""}</Markdown>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  />
+                  <div className="absolute top-2 right-2 flex gap-2 z-10">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shadow-md bg-background hover:bg-accent h-8 w-8"
+                      onClick={() => setIsEditModeAI(!isEditModeAI)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shadow-md bg-background hover:bg-accent h-8 w-8"
+                      onClick={() => {
+                        const value = watch("ai_diagnoses")
+                        handleCopy(value || "")
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Финальный текст */}
+            
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Финальный текст</h3>
               <div className="space-y-2">
                 <Label htmlFor="final_text" className="hidden">
                   Финальный текст:
                 </Label>
-                <Controller
-                  name="final_text"
-                  control={control}
-                  render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      id="final_text"
-                      placeholder="Обработанный финальный текст..."
-                      className="min-h-[200px] resize-y"
-                      disabled={isSubmitting}
-                    />
-                  )}
-                />
+                <div className="relative">
+                  <Controller
+                    name="final_text"
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        {isEditModeFinal ? (
+                          <Textarea
+                            {...field}
+                            id="final_text"
+                            placeholder="Обработанный финальный текст..."
+                            className="min-h-[200px] resize-y"
+                            disabled={isSubmitting}
+                          />
+                        ) : (
+                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none">
+                            <Markdown>{field.value || ""}</Markdown>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  />
+                  <div className="absolute top-2 right-2 flex gap-2 z-10">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shadow-md bg-background hover:bg-accent h-8 w-8"
+                      onClick={() => setIsEditModeFinal(!isEditModeFinal)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shadow-md bg-background hover:bg-accent h-8 w-8"
+                      onClick={() => {
+                        const value = watch("final_text")
+                        handleCopy(value || "")
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -398,6 +620,25 @@ export const AudioTranscriptionSheet = ({
                     </>
                   )}
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGenerateAIDiagnosis}
+                  disabled={isLoadingAI || isSubmitting}
+                  className="flex-1"
+                >
+                  {isLoadingAI ? (
+                    <>
+                      <Spinner />
+                      Генерация...
+                    </>
+                  ) : (
+                    <>
+                      <Bot />
+                      Создать отчет
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
 
@@ -408,25 +649,59 @@ export const AudioTranscriptionSheet = ({
                 <Label htmlFor="transcribe_text" className="hidden">
                   Транскрипция:
                 </Label>
-                <Controller
-                  name="transcribe_text"
-                  control={control}
-                  render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      id="transcribe_text"
-                      placeholder="Транскрипция аудио записи..."
-                      className="min-h-[200px] resize-y"
-                      disabled={isSubmitting}
-                    />
-                  )}
-                />
+                <div className="relative">
+                  <Controller
+                    name="transcribe_text"
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        {isEditModeTranscribe ? (
+                          <Textarea
+                            {...field}
+                            id="transcribe_text"
+                            placeholder="Транскрипция аудио записи..."
+                            className="min-h-[200px] resize-y"
+                            disabled={isSubmitting}
+                          />
+                        ) : (
+                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none">
+                            <Markdown>{field.value || ""}</Markdown>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  />
+                  <div className="absolute top-2 right-2 flex gap-2 z-10">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shadow-md bg-background hover:bg-accent h-8 w-8"
+                      onClick={() => setIsEditModeTranscribe(!isEditModeTranscribe)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shadow-md bg-background hover:bg-accent h-8 w-8"
+                      onClick={() => {
+                        const value = watch("transcribe_text")
+                        handleCopy(value || "")
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
+
             {/* Кнопка сохранения */}
             {isDirty && (
-              <div className="bg-background sticky bottom-0 border-t pt-4">
+              <div className="bg-background sticky bottom-0 border-t py-4">
                 <Button
                   type="submit"
                   className="w-full"
