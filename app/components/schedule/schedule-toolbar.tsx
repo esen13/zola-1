@@ -1,7 +1,14 @@
 "use client"
 
+import { useBreakpoint } from "@/app/hooks/use-breakpoint"
 import type { CalendarView } from "@/app/types/schedule.types"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Select,
   SelectContent,
@@ -11,9 +18,10 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUser } from "@/lib/user-store/provider"
+import { cn } from "@/lib/utils"
 import { addDays, format, startOfToday, subDays } from "date-fns"
 import { ru } from "date-fns/locale"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useState } from "react"
 
 interface Doctor {
@@ -43,6 +51,7 @@ export const ScheduleToolbar = ({
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const { user } = useUser()
   const userRole = user?.role || null
+  const isMobile = useBreakpoint(768)
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -108,40 +117,99 @@ export const ScheduleToolbar = ({
     }
   }
 
+  const getNavigationLabel = () => {
+    if (view === "day") {
+      return "День"
+    } else if (view === "week") {
+      return "Неделя"
+    } else {
+      return "Месяц"
+    }
+  }
+
   const canSelectDoctor =
     userRole === "manager" || userRole === "moderator" || userRole === "admin"
 
   return (
     <div className="bg-background border-b px-4 py-3">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">Календарь</h1>
+      <div
+        className={cn(
+          "flex items-center gap-4",
+          isMobile ? "flex-col" : "justify-between"
+        )}
+      >
+        <div
+          className={cn(
+            "flex items-center gap-4",
+            isMobile && "w-full justify-between"
+          )}
+        >
+          <h1 className={cn("font-semibold", isMobile ? "text-lg" : "text-xl")}>
+            Календарь
+          </h1>
           <Tabs
             value={view}
             onValueChange={(v) => onViewChange(v as CalendarView)}
           >
-            <TabsList>
-              <TabsTrigger value="day">День</TabsTrigger>
-              <TabsTrigger value="week">Неделя</TabsTrigger>
-              <TabsTrigger value="month">Месяц</TabsTrigger>
+            <TabsList className={isMobile ? "h-8" : ""}>
+              <TabsTrigger value="day" className={isMobile ? "text-xs px-2" : ""}>
+                День
+              </TabsTrigger>
+              <TabsTrigger value="week" className={isMobile ? "text-xs px-2" : ""}>
+                Неделя
+              </TabsTrigger>
+              <TabsTrigger value="month" className={isMobile ? "text-xs px-2" : ""}>
+                Месяц
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handlePrev}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={handleToday}>
-            Сегодня
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleNext}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <div className="ml-4 text-sm font-medium">{formatDateLabel()}</div>
-        </div>
+        <div
+          className={cn(
+            "flex items-center gap-2",
+            isMobile && "w-full justify-between"
+          )}
+        >
+          {isMobile ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2 flex-1">
+                  <span className="text-sm font-medium truncate">
+                    {formatDateLabel()}
+                  </span>
+                  <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handlePrev}>
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Предыдущий {getNavigationLabel().toLowerCase()}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleToday}>
+                  Сегодня
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleNext}>
+                  Следующий {getNavigationLabel().toLowerCase()}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={handlePrev}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" onClick={handleToday}>
+                Сегодня
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleNext}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <div className="ml-4 text-sm font-medium">{formatDateLabel()}</div>
+            </div>
+          )}
 
-        <div className="flex items-center gap-2">
           {canSelectDoctor && (
             <Select
               value={selectedDoctorId || "all"}
@@ -149,7 +217,7 @@ export const ScheduleToolbar = ({
                 onDoctorChange(value === "all" ? null : value)
               }
             >
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className={isMobile ? "w-full" : "w-[200px]"}>
                 <SelectValue placeholder="Выберите доктора" />
               </SelectTrigger>
               <SelectContent>
