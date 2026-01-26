@@ -4,11 +4,14 @@ import { NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 
+const N8N_WEBHOOK_URL =
+  "https://esen.app.n8n.cloud/webhook/64378039-bfe3-4e69-9f1b-4726fabb73d2"
+
 /**
- * PATCH /api/doctors/audio/[audioId]
- * Обновление транскрипции аудио записи
+ * POST /api/doctors/audio/[audioId]/ai-diagnosis
+ * Генерация AI отчета предварительного диагноза
  */
-export async function PATCH(
+export async function POST(
   request: Request,
   { params }: { params: Promise<{ audioId: string }> }
 ) {
@@ -57,23 +60,7 @@ export async function PATCH(
       )
     }
 
-    // Получаем данные из запроса
-    const body = await request.json()
-    const { transcribe_text, final_text, ai_diagnoses } = body
-
-    // Валидация: хотя бы одно поле должно быть обновлено
-    if (
-      transcribe_text === undefined &&
-      final_text === undefined &&
-      ai_diagnoses === undefined
-    ) {
-      return NextResponse.json(
-        { error: "Необходимо указать хотя бы одно поле для обновления" },
-        { status: 400 }
-      )
-    }
-
-    // Используем service role клиент для обновления
+    // Используем service role клиент для получения данных аудио
     const serviceClient = createServiceRoleClient()
     if (!serviceClient) {
       return NextResponse.json(
@@ -82,59 +69,68 @@ export async function PATCH(
       )
     }
 
-    // Проверяем, что запись существует и принадлежит текущему пользователю
-    const { data: existingRecord, error: checkError } = await serviceClient
+    // Получаем данные аудио записи
+    const { data: audioRecord, error: audioError } = await serviceClient
       .from("users_audio")
-      .select("user_id")
+      .select("user_id, audio_filename")
       .eq("id", audioId)
       .single()
 
-    if (checkError || !existingRecord) {
+    if (audioError || !audioRecord) {
       return NextResponse.json({ error: "Запись не найдена" }, { status: 404 })
     }
 
-    if (existingRecord.user_id !== user.id) {
+    // Проверяем, что запись принадлежит текущему пользователю
+    if (audioRecord.user_id !== user.id) {
       return NextResponse.json({ error: "Доступ запрещен" }, { status: 403 })
     }
 
-    // Подготавливаем данные для обновления
-    const updateData: {
-      transcribe_text?: string | null
-      final_text?: string | null
-      ai_diagnoses?: string | null
-    } = {}
-    if (transcribe_text !== undefined) {
-      updateData.transcribe_text = transcribe_text || null
-    }
-    if (final_text !== undefined) {
-      updateData.final_text = final_text || null
-    }
-    if (ai_diagnoses !== undefined) {
-      updateData.ai_diagnoses = ai_diagnoses || null
-    }
+    // Отправляем запрос на webhook
+    try {
+      const webhookResponse = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: audioRecord.user_id,
+          audio_filename: audioRecord.audio_filename,
+        }),
+      })
 
-    // Обновляем запись
-    const { data: updatedRecord, error: updateError } = await serviceClient
-      .from("users_audio")
-      .update(updateData)
-      .eq("id", audioId)
-      .select()
-      .single()
+      if (!webhookResponse.ok) {
+        console.error(
+          "Ошибка webhook:",
+          webhookResponse.status,
+          webhookResponse.statusText
+        )
+        return NextResponse.json(
+          { error: "Ошибка получения AI диагноза от сервиса" },
+          { status: 500 }
+        )
+      }
 
-    if (updateError) {
-      console.error("Ошибка обновления транскрипции:", updateError)
+      // Получаем ответ от webhook (ожидаем строку)
+      const aiDiagnosis = await webhookResponse.text()
+
+      return NextResponse.json({
+        success: true,
+        ai_diagnoses: aiDiagnosis,
+      })
+    } catch (webhookError) {
+      console.error("Ошибка отправки запроса на webhook:", webhookError)
       return NextResponse.json(
-        { error: `Ошибка обновления данных: ${updateError.message}` },
+        {
+          error:
+            webhookError instanceof Error
+              ? webhookError.message
+              : "Ошибка соединения с сервисом AI",
+        },
         { status: 500 }
       )
     }
-
-    return NextResponse.json({
-      success: true,
-      audio: updatedRecord,
-    })
   } catch (error) {
-    console.error("Ошибка API обновления транскрипции:", error)
+    console.error("Ошибка API генерации AI диагноза:", error)
     return NextResponse.json(
       { error: "Внутренняя ошибка сервера" },
       { status: 500 }

@@ -19,11 +19,13 @@ interface Patient {
 interface PatientsSidebarProps {
   selectedPatientId: string | null
   onPatientSelect: (patientId: string | null) => void
+  isInSheet?: boolean
 }
 
 export const PatientsSidebar = ({
   selectedPatientId,
   onPatientSelect,
+  isInSheet = false,
 }: PatientsSidebarProps) => {
   const [patients, setPatients] = useState<Patient[]>([])
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([])
@@ -110,14 +112,19 @@ export const PatientsSidebar = ({
 
   if (isLoading) {
     return (
-      <div className="bg-background w-80 border-l p-4">
+      <div className={cn("bg-background p-4", !isInSheet && "w-80 border-l")}>
         <div className="text-muted-foreground text-sm">Загрузка...</div>
       </div>
     )
   }
 
   return (
-    <div className="bg-background flex w-80 flex-col border-l">
+    <div
+      className={cn(
+        "bg-background flex h-full flex-col",
+        !isInSheet && "w-80 border-l"
+      )}
+    >
       {/* Patients Section */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="border-b p-4">
