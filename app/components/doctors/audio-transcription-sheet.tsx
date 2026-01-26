@@ -23,7 +23,7 @@ import { useUser } from "@/lib/user-store/provider"
 import { formatDateTime } from "@/lib/utils/date"
 import { pdf } from "@react-pdf/renderer"
 import { useQuery, useQueryClient, type Query } from "@tanstack/react-query"
-import { Bot, Copy, Download, Eye, Pencil } from "lucide-react"
+import { Bot, Copy, Download, Eye, FileText, Pencil } from "lucide-react"
 import { marked } from "marked"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -121,6 +121,7 @@ export const AudioTranscriptionSheet = ({
   })
 
   const finalTextValue = watch("final_text")
+  const aiDiagnosesValue = watch("ai_diagnoses")
 
   // Обновляем форму при изменении данных аудио
   useEffect(() => {
@@ -320,7 +321,7 @@ export const AudioTranscriptionSheet = ({
       })
 
       toast({
-        title: "AI отчет сгенерирован",
+        title: "Отчет сгенерирован",
         status: "success",
       })
 
@@ -461,7 +462,7 @@ export const AudioTranscriptionSheet = ({
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
             {/* AI Диагноз */}
-            <div className="space-y-4">
+            {aiDiagnosesValue && <div className="space-y-4">
               <h3 className="text-lg font-semibold">Предварительный диагноз (Отчет от Airis)</h3>
               <div className="space-y-2">
                 <Label htmlFor="ai_diagnoses" className="hidden">
@@ -482,7 +483,7 @@ export const AudioTranscriptionSheet = ({
                             disabled={isSubmitting}
                           />
                         ) : (
-                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none">
+                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none text-sm">
                             <Markdown>{field.value || ""}</Markdown>
                           </div>
                         )}
@@ -497,7 +498,7 @@ export const AudioTranscriptionSheet = ({
                       className="shadow-md bg-background hover:bg-accent h-8 w-8"
                       onClick={() => setIsEditModeAI(!isEditModeAI)}
                     >
-                      <Pencil className="h-4 w-4" />
+                      {!isEditModeAI ? <Pencil /> : <FileText />}
                     </Button>
                     <Button
                       type="button"
@@ -514,7 +515,7 @@ export const AudioTranscriptionSheet = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </div>}
 
             {/* Финальный текст */}
             
@@ -539,7 +540,7 @@ export const AudioTranscriptionSheet = ({
                             disabled={isSubmitting}
                           />
                         ) : (
-                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none">
+                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none text-sm">
                             <Markdown>{field.value || ""}</Markdown>
                           </div>
                         )}
@@ -554,7 +555,7 @@ export const AudioTranscriptionSheet = ({
                       className="shadow-md bg-background hover:bg-accent h-8 w-8"
                       onClick={() => setIsEditModeFinal(!isEditModeFinal)}
                     >
-                      <Pencil className="h-4 w-4" />
+                       {!isEditModeFinal ? <Pencil /> : <FileText />}
                     </Button>
                     <Button
                       type="button"
@@ -664,7 +665,7 @@ export const AudioTranscriptionSheet = ({
                             disabled={isSubmitting}
                           />
                         ) : (
-                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none">
+                          <div className="min-h-[200px] rounded-lg border p-4 prose dark:prose-invert max-w-none text-sm">
                             <Markdown>{field.value || ""}</Markdown>
                           </div>
                         )}
@@ -679,7 +680,7 @@ export const AudioTranscriptionSheet = ({
                       className="shadow-md bg-background hover:bg-accent h-8 w-8"
                       onClick={() => setIsEditModeTranscribe(!isEditModeTranscribe)}
                     >
-                      <Pencil className="h-4 w-4" />
+                      {!isEditModeTranscribe ? <Pencil /> : <FileText />}
                     </Button>
                     <Button
                       type="button"
