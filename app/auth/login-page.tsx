@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator"
 import { signInWithGoogle } from "@/lib/api"
 import { APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
-import { ArrowLeft, Mail, RefreshCw } from "lucide-react"
+import { ArrowLeft, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -244,204 +244,199 @@ export default function LoginPage() {
             </div>
           )}
 
-          {!loginMethod ? (
-            <div className="mt-8 space-y-3">
-              <Button
-                variant="secondary"
-                className="w-full text-base sm:text-base"
-                size="lg"
-                onClick={handleSignInWithGoogle}
-                disabled={isLoading}
-              >
-                <img
-                  src="https://www.google.com/favicon.ico"
-                  alt="Google logo"
-                  width={20}
-                  height={20}
-                  className="mr-2 size-4"
-                />
-                <span>
-                  {isLoading ? "Подключение..." : "Продолжить с Google"}
-                </span>
-              </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background text-muted-foreground px-2">
-                    или
-                  </span>
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                className="w-full text-base sm:text-base"
-                size="lg"
-                onClick={() => setLoginMethod("email")}
-                disabled={isLoading}
-              >
-                <Mail className="mr-2 size-4" />
-                <span>Продолжить с Email</span>
-              </Button>
-            </div>
-          ) : loginMethod === "email" && emailStep === "email" ? (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    onClick={handleBackToMethodSelection}
-                  >
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                  <div className="flex-1">
-                    <CardTitle>Вход через Email</CardTitle>
-                    <CardDescription>
-                      Введите ваш email адрес для получения кода подтверждения
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={form.handleSubmit(handleEmailSubmit)}
-                  className="space-y-4"
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Адрес электронной почты</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="m@example.com"
-                      {...form.register("email", {
-                        required: "Email обязателен",
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: "Неверный адрес электронной почты",
-                        },
-                      })}
-                      disabled={isLoading}
-                    />
-                    {form.formState.errors.email && (
-                      <p className="text-destructive text-sm">
-                        {form.formState.errors.email.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Отправка..." : "Отправить код подтверждения"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    onClick={handleBackToEmail}
-                  >
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                  <div className="flex-1">
-                    <CardTitle>Подтвердите вход</CardTitle>
-                    <CardDescription>
-                      Введите код подтверждения, который мы отправили на ваш
-                      email адрес: {userEmail}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={form.handleSubmit(handleOTPSubmit)}
-                  className="space-y-4"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="otp">Код подтверждения</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={handleResendOTP}
-                        disabled={
-                          isResendingOTP || isLoading || resendTimer > 0
-                        }
-                      >
-                        <RefreshCw
-                          className={`mr-1 size-3 ${
-                            isResendingOTP ? "animate-spin" : ""
-                          }`}
-                        />
-                        {resendTimer > 0
-                          ? `Отправить код повторно (${resendTimer}с)`
-                          : "Отправить код повторно"}
-                      </Button>
+          <div className="mt-8 space-y-3">
+            {emailStep === "email" ? (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <CardTitle>Вход через Email</CardTitle>
+                      <CardDescription className="mt-2">
+                        Введите ваш email адрес для получения кода подтверждения
+                      </CardDescription>
                     </div>
-                    <Controller
-                      control={form.control}
-                      name="otp"
-                      rules={{
-                        required: "Код подтверждения обязателен",
-                        minLength: {
-                          value: 6,
-                          message: "Код должен содержать 6 цифр",
-                        },
-                      }}
-                      render={({ field }) => (
-                        <InputOTP
-                          maxLength={6}
-                          value={field.value}
-                          onChange={field.onChange}
-                          disabled={isLoading}
-                        >
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                          </InputOTPGroup>
-                          <InputOTPSeparator />
-                          <InputOTPGroup>
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      )}
-                    />
-                    {form.formState.errors.otp && (
-                      <p className="text-destructive text-sm">
-                        {form.formState.errors.otp.message}
-                      </p>
-                    )}
                   </div>
+                </CardHeader>
+                <CardContent>
+                  <form
+                    onSubmit={form.handleSubmit(handleEmailSubmit)}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Адрес электронной почты</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        {...form.register("email", {
+                          required: "Email обязателен",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Неверный адрес электронной почты",
+                          },
+                        })}
+                        disabled={isLoading}
+                      />
+                      {form.formState.errors.email && (
+                        <p className="text-destructive text-sm">
+                          {form.formState.errors.email.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Проверка..." : "Подтвердить"}
-                  </Button>
-                </form>
-              </CardContent>
-              <CardFooter className="flex flex-col gap-2">
-                <Link
-                  href="mailto:info@airis.one"
-                  className="text-muted-foreground text-sm hover:underline"
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Отправка..." : "Отправить код"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      onClick={handleBackToEmail}
+                    >
+                      <ArrowLeft className="size-4" />
+                    </Button>
+                    <div className="flex-1">
+                      <CardTitle>Подтвердите вход</CardTitle>
+                      <CardDescription className="mt-2">
+                        Введите код подтверждения, который мы отправили на ваш
+                        email адрес:{" "}
+                        <span className="font-medium text-black dark:text-white">
+                          {userEmail}
+                        </span>
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <form
+                    onSubmit={form.handleSubmit(handleOTPSubmit)}
+                    className="space-y-2"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="otp">Код подтверждения</Label>
+                      </div>
+
+                      <Controller
+                        control={form.control}
+                        name="otp"
+                        rules={{
+                          required: "Код подтверждения обязателен",
+                          minLength: {
+                            value: 6,
+                            message: "Код должен содержать 6 цифр",
+                          },
+                        }}
+                        render={({ field }) => (
+                          <InputOTP
+                            maxLength={6}
+                            value={field.value}
+                            onChange={field.onChange}
+                            disabled={isLoading}
+                          >
+                            <InputOTPGroup>
+                              <InputOTPSlot index={0} />
+                              <InputOTPSlot index={1} />
+                              <InputOTPSlot index={2} />
+                            </InputOTPGroup>
+                            <InputOTPSeparator />
+                            <InputOTPGroup>
+                              <InputOTPSlot index={3} />
+                              <InputOTPSlot index={4} />
+                              <InputOTPSlot index={5} />
+                            </InputOTPGroup>
+                          </InputOTP>
+                        )}
+                      />
+                      {form.formState.errors.otp && (
+                        <p className="text-destructive text-sm">
+                          {form.formState.errors.otp.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-xs"
+                      onClick={handleResendOTP}
+                      disabled={isResendingOTP || isLoading || resendTimer > 0}
+                    >
+                      <RefreshCw
+                        className={`mr-1 size-3 ${
+                          isResendingOTP ? "animate-spin" : ""
+                        }`}
+                      />
+                      {resendTimer > 0
+                        ? `Отправить код повторно (${resendTimer}с)`
+                        : "Отправить код повторно"}
+                    </Button>
+
+                    <Button
+                      type="submit"
+                      className="mt-2 w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Проверка..." : "Подтвердить"}
+                    </Button>
+                  </form>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2">
+                  <Link
+                    href="mailto:info@airis.one"
+                    className="text-muted-foreground text-sm hover:underline"
+                  >
+                    Проблемы со входом? Свяжитесь с поддержкой
+                  </Link>
+                </CardFooter>
+              </Card>
+            )}
+            {emailStep !== "otp" && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background text-muted-foreground px-2">
+                      или
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  variant="secondary"
+                  className="w-full text-base sm:text-base"
+                  size="lg"
+                  onClick={handleSignInWithGoogle}
+                  disabled={isLoading}
                 >
-                  Проблемы со входом? Свяжитесь с поддержкой
-                </Link>
-              </CardFooter>
-            </Card>
-          )}
+                  <img
+                    src="https://www.google.com/favicon.ico"
+                    alt="Google logo"
+                    width={20}
+                    height={20}
+                    className="mr-2 size-4"
+                  />
+                  <span>
+                    {isLoading ? "Подключение..." : "Продолжить с Google"}
+                  </span>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </main>
 
