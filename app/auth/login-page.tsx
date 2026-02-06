@@ -24,7 +24,7 @@ import { createClient } from "@/lib/supabase/client"
 import { ArrowLeft, Mail, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { HeaderGoBack } from "../components/header-go-back"
 
@@ -193,8 +193,9 @@ export default function LoginPage() {
       }
 
       if (verifyData?.session) {
-        router.refresh()
-        router.push("/")
+        // router.refresh()
+        // router.push("/")
+        window.location.href = "/"
       }
     } catch (err: unknown) {
       console.error("Error verifying OTP:", err)
