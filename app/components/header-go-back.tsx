@@ -11,7 +11,7 @@ export function HeaderGoBack({ href = "/" }: { href?: string }) {
       >
         <ArrowLeft className="text-foreground" />
         <span className="font-base ml-2 hidden text-sm sm:inline-block">
-          Back to Chat
+          Назад
         </span>
       </Link>
     </header>
